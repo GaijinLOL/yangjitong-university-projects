@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}智策 - 企业经营分析与决策支持系统{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}" />
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    <div class="site-shell">
+      <nav class="navbar navbar-expand-lg app-navbar sticky-top">
+        <div class="container py-2">
+          <a class="navbar-brand d-flex align-items-center gap-3" href="/">
+            <span class="brand-mark">AI</span>
+            <span>
+              <span class="d-block brand-title">智策·企业经营分析</span>
+              <span class="d-block brand-subtitle">面向经营洞察、风险识别与可视化展示，兼顾投资辅助参考</span>
+            </span>
+          </a>
+          <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="nav">
+            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+              <li class="nav-item"><a class="nav-link" href="/">首页</a></li>
+              <li class="nav-item"><a class="nav-link" href="/company">企业查询</a></li>
+              <li class="nav-item"><a class="nav-link" href="/dashboard">可视化分析</a></li>
+              <li class="nav-item"><a class="nav-link" href="/qa">智能问答</a></li>
+              <li class="nav-item"><a class="nav-link nav-cta" href="/report">生成报告</a></li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <main class="container my-4 my-lg-5">
+        {% block content %}{% endblock %}
+      </main>
+
+      <footer class="site-footer mt-5">
+        <div class="container footer-inner">
+          <div>
+            <div class="footer-title">智策：企业经营分析与决策支持系统</div>
+            <div class="small text-secondary">适用于企业经营分析、产品演示、风险识别与数据驱动决策，也可辅助投资者做基本面研究。</div>
+          </div>
+          <div class="small text-secondary text-lg-end">
+            <div>技术栈：Flask + MySQL + Tushare + 通义千问 + ECharts</div>
+            <div>© 2026 本地可部署演示系统</div>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

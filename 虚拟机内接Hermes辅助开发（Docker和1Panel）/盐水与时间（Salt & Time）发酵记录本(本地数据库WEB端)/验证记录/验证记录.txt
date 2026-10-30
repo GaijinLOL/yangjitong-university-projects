@@ -1,0 +1,24 @@
+=========== 一、业务功能测试（新增/查询/修改/删除） ===========
+$ curl -X POST http://127.0.0.1:18080/api/batches -d '{...白萝卜...}'
+{"batch":{"id":9,"name":"课程设计验证 · 白萝卜","kind":"泡菜","vessel":"玻璃罐 2L","salt_pct":5,"started_on":"2026-10-25","target_days":10,"status":"fermenting","note":"用于持久化与备份验证","created_at":"2026-10-25T06:01:22.048Z","updated_at":"2026-10-25T06:01:22.048Z","day_no":0,"days_left":10,"reading_count":0,"last_on":null,"last_temp":null,"last_ph":null,"last_aroma":null},"readings":[]}
+--> 新记录 id=9
+
+$ curl GET http://127.0.0.1:18080/api/batches/9
+{"batch":{"id":9,"name":"课程设计验证 · 白萝卜","kind":"泡菜","vessel":"玻璃罐 2L","salt_pct":5,"started_on":"2026-10-25","target_days":10,"status":"fermenting","note":"用于持久化与备份验证","created_at":"2026-10-25T06:01:22.048Z","updated_at":"2026-10-25T06:01:22.048Z","day_no":0,"days_left":10,"reading_count":0,"last_on":null,"last_temp":null,"last_ph":null,"last_aroma":null},"readings":[]}
+
+$ curl -X POST http://127.0.0.1:18080/api/batches/9/readings -d '{"temp_c":24.5,"ph":4.6,"aroma":"脆，微酸"}'
+{"batch":{"id":9,"name":"课程设计验证 · 白萝卜","kind":"泡菜","vessel":"玻璃罐 2L","salt_pct":5,"started_on":"2026-10-25","target_days":10,"status":"fermenting","note":"用于持久化与备份验证","created_at":"2026-10-25T06:01:22.048Z","updated_at":"2026-10-25T06:01:22.048Z","day_no":0,"days_left":10,"reading_count":1,"last_on":"2026-10-25","last_temp":24.5,"last_ph":4.6,"last_aroma":"脆，微酸"},"readings":[{"id":12,"taken_on":"2026-10-25","temp_c":24.5,"ph":4.6,"aroma":"脆，微酸","note":null,"created_at":"2026-10-25T06:01:22.231Z"}]}
+
+$ curl -X PATCH http://127.0.0.1:18080/api/batches/9 -d '{"status":"done"}'
+{"batch":{"id":9,"name":"课程设计验证 · 白萝卜","kind":"泡菜","vessel":"玻璃罐 2L","salt_pct":5,"started_on":"2026-10-25","target_days":10,"status":"done","note":"用于持久化与备份验证","created_at":"2026-10-25T06:01:22.048Z","updated_at":"2026-10-25T06:01:22.264Z","day_no":0,"days_left":10,"reading_count":1,"last_on":"2026-10-25","last_temp":24.5,"last_ph":4.6,"last_aroma":"脆，微酸"},"readings":[{"id":12,"taken_on":"2026-10-25","temp_c":24.5,"ph":4.6,"aroma":"脆，微酸","note":null,"created_at":"2026-10-25T06:01:22.231Z"}]}
+
+=========== 二、接口边界与异常校验 ===========
+空名字:      HTTP 400  {"error":"JSON 格式不对"}
+非法状态:    HTTP 400  {"error":"JSON 格式不对"}
+pH 超范围:   HTTP 400  {"error":"JSON 格式不对"}
+盐度超范围:  HTTP 400  {"error":"JSON 格式不对"}
+不存在的ID:  HTTP 404  {"error":"没找到这一坛"}
+
+=========== 三、统计接口 ===========
+{"total":7,"fermenting":4,"done":2,"failed":1,"readings":10,"by_kind":[{"kind":"泡菜","n":3},{"kind":"味噌","n":1},{"kind":"康普茶","n":1},{"kind":"腌菜","n":1},{"kind":"酸面团","n":1}],"longest_running":{"name":"白味噌 · 春酿","kind":"味噌","day_no":30,"overdue_days":-150},"today":"2026-10-25"}
+ID=9

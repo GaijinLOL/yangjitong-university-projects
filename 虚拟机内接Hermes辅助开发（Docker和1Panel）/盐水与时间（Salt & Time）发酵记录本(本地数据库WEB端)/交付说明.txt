@@ -1,0 +1,25 @@
+Xc24590104 杨济同 · Linux 操作课程设计交付
+
+一、这是什么
+  项目名称：盐水与时间（Salt & Time）—— 一坛一档的发酵记录本
+  在线访问：http://192.168.119.128:18080
+
+二、文件说明
+  Xc24590104 杨济同 盐水与时间.docx   实训过程报告（Word，可编辑，22 页）
+  Xc24590104 杨济同 盐水与时间.pdf    同上，PDF 版（用于提交）
+  源码-salt-time-1.0.0.zip           完整源码，不含任何真实密钥
+  报告插图/                          报告里的 22 张图，单张 PNG
+  验证记录/                          报告引用的原始命令输出与测试记录
+
+三、源码包怎么跑起来
+  unzip 源码-salt-time-1.0.0.zip -d salt-time
+  cd salt-time
+  cp .env.example .env
+  # 编辑 .env，把 DB_PASSWORD 改成一串随机字符
+  docker compose up -d --build
+
+  起来之后浏览器打开 http://本机IP:18080
+  数据库端口不对宿主机开放，只在 salt-time-net 内部通过服务名 db 访问。
+
+四、提交包不含真实密钥
+  源码包里已剔除 .env，只保留 .env.example（密码位是 ***）。

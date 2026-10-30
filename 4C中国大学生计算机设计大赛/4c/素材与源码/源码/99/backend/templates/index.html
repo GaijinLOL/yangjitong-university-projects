@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}首页 - 智策{% endblock %}
+
+{% block content %}
+  <section class="hero-card mb-4">
+    <div class="hero-content row g-4 align-items-center">
+      <div class="col-lg-7">
+        <span class="section-label mb-3">产品总览</span>
+        <h1 class="display-title">智策：企业经营分析与决策支持系统</h1>
+        <p class="muted-lead fs-5 mb-4">
+          面向企业管理者、业务分析人员与展示场景，融合财经数据、企业运营指标、智能问答、图表分析与自动报告生成，
+          将“数据洞察”转化为“可展示、可解释、可执行”的经营分析结果。
+        </p>
+        <div class="action-cluster mb-4">
+          <a class="btn btn-primary" href="/company">开始数据同步与企业查询</a>
+          <a class="btn btn-outline-primary" href="/dashboard">查看可视化分析</a>
+          <a class="btn btn-outline-secondary" href="/qa">体验智能问答</a>
+          <a class="btn btn-outline-dark" href="/report">生成分析报告</a>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="badge-soft primary">企业经营分析</span>
+          <span class="badge-soft success">多维运营评分</span>
+          <span class="badge-soft warning">四灯置信度</span>
+          <span class="badge-soft danger">兼顾投资辅助参考</span>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="highlight-grid">
+          <div class="metric-card">
+            <div class="metric-label">核心价值</div>
+            <div class="metric-value">一体化</div>
+            <div class="metric-hint">数据同步、分析、问答、报告与展示联动</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">定位</div>
+            <div class="metric-value">经营分析</div>
+            <div class="metric-hint">以企业洞察与决策支持为主线</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">智能能力</div>
+            <div class="metric-value">AI 驱动</div>
+            <div class="metric-hint">结合本地结构化数据生成更稳健结论</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">风险控制</div>
+            <div class="metric-value">4 灯分级</div>
+            <div class="metric-hint">展示结论置信度，降低误导性表达</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% if missing and missing|length > 0 %}
+    <div class="card border-0 mb-4">
+      <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between gap-3 align-items-start">
+          <div>
+            <span class="badge-soft warning mb-2">启动提醒</span>
+            <h2 class="h5 mb-2">检测到必要配置缺失</h2>
+            <div class="text-muted">请先补齐密钥配置，再进行联网数据同步与智能问答。</div>
+          </div>
+          <div>
+            <ul class="mb-0">
+              {% for k in missing %}
+                <li><code>{{ k }}</code></li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+        <div class="mt-3 small text-muted">建议复制 <code>.env.example</code> 为 <code>.env</code> 后填写，并重启服务。</div>
+      </div>
+    </div>
+  {% endif %}
+
+  <section class="mb-4">
+    <div class="page-heading">
+      <div>
+        <span class="section-label">系统能力</span>
+        <h2 class="h3">围绕企业经营分析形成完整展示闭环</h2>
+        <div class="text-muted">适合产品演示、方案汇报、经营洞察和数据驱动决策场景，也可为投资者提供辅助参考。</div>
+      </div>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-6 col-xl-3"><div class="feature-card"><div class="badge-soft primary mb-3">01 数据底座</div><h3 class="h5">多源数据接入与本地缓存</h3><p class="text-muted mb-0">拉取企业基础信息、行情、财务指标并入库，支持增量更新、主键去重与本地查询。</p></div></div>
+      <div class="col-md-6 col-xl-3"><div class="feature-card"><div class="badge-soft success mb-3">02 指标诊断</div><h3 class="h5">盈利 / 偿债 / 成长 / 风险</h3><p class="text-muted mb-0">将结构化数据转化为可读、可比、可解释的运营评分与分析结论。</p></div></div>
+      <div class="col-md-6 col-xl-3"><div class="feature-card"><div class="badge-soft warning mb-3">03 智能问答</div><h3 class="h5">基于本地数据的自然语言分析</h3><p class="text-muted mb-0">强调依据给定数据回答，并用四灯机制显示置信度与数据完整度。</p></div></div>
+      <div class="col-md-6 col-xl-3"><div class="feature-card"><div class="badge-soft danger mb-3">04 报告输出</div><h3 class="h5">面向展示与决策的结构化报告</h3><p class="text-muted mb-0">快速生成适合汇报、评审与讨论使用的经营分析内容。</p></div></div>
+    </div>
+  </section>
+
+  <section class="mb-4">
+    <div class="row g-3">
+      <div class="col-lg-8">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-semibold">展示主线与扩展价值</div>
+              <div class="small text-muted">主线聚焦企业经营分析，扩展兼顾上市公司研究参考</div>
+            </div>
+            <span class="badge-soft success">Positioning</span>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6"><div class="feature-card"><h3 class="h5">主主题：企业经营分析展示</h3><p class="text-muted mb-0">通过数据同步、评分、图表、问答和报告，把企业经营状态讲清楚、展示清楚。</p></div></div>
+              <div class="col-md-6"><div class="feature-card"><h3 class="h5">辅助价值：投资者研究参考</h3><p class="text-muted mb-0">在展示企业经营数据的同时，也能帮助普通投资者理解上市公司基本面与风险点。</p></div></div>
+              <div class="col-md-6"><div class="feature-card"><h3 class="h5">四灯机制</h3><p class="text-muted mb-0">把结论可靠程度显式展示出来，便于演示时说明数据边界与分析置信度。</p></div></div>
+              <div class="col-md-6"><div class="feature-card"><h3 class="h5">抗幻觉约束</h3><p class="text-muted mb-0">要求系统优先引用已同步数据，对缺失内容明确说明，不制造虚假确定性。</p></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-semibold">服务健康检查</div>
+              <div class="small text-muted">确认服务、数据库和模型配置状态</div>
+            </div>
+            <div class="status-inline" id="healthStatus">等待检查</div>
+          </div>
+          <div class="card-body">
+            <div class="d-flex justify-content-end mb-3"><button class="btn btn-outline-success btn-sm" onclick="checkHealth()">立即检查</button></div>
+            <pre class="small" id="healthBox">点击“立即检查”获取结果</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function checkHealth() {
+  const box = document.getElementById('healthBox');
+  const status = document.getElementById('healthStatus');
+  const startedAt = Date.now();
+  box.textContent = '检查中...';
+  status.textContent = '检查中... (0s)';
+  const timer = setInterval(() => {
+    const elapsed = Math.round((Date.now() - startedAt) / 1000);
+    status.textContent = `检查中... (${elapsed}s)`;
+  }, 1000);
+  try {
+    const r = await fetch('/api/health');
+    const j = await r.json();
+    clearInterval(timer);
+    const elapsed = Math.round((Date.now() - startedAt) / 1000);
+    status.textContent = `完成 (${elapsed}s)`;
+    box.textContent = JSON.stringify(j, null, 2);
+  } catch (e) {
+    clearInterval(timer);
+    status.textContent = '失败';
+    box.textContent = String(e);
+  }
+}
+</script>
+{% endblock %}

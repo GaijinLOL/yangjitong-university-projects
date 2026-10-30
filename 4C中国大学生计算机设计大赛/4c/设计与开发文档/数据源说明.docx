@@ -1,0 +1,424 @@
+ Tushare 数据说明与数据来源说明
+
+ 1. 文档目的
+
+本文档用于说明本项目中 Tushare 数据的来源、使用方式、涉及的数据集，以及这些数据在系统中的落地位置与用途。
+
+本项目主题名称为：智策：企业运营分析与决策支持系统。
+
+系统通过接入 Tushare 的结构化财经数据，结合本地 MySQL 缓存、指标计算、智能问答和自动报告生成，实现从数据接入到经营分析输出的完整流程。
+
+---
+
+ 2. 数据来源说明
+
+ 2.1 主数据来源
+
+本项目的核心结构化数据来源于 Tushare Pro。
+
+Tushare 是面向金融数据分析场景的数据接口服务平台，能够提供股票基础信息、行情数据、估值指标、财务报表与财务指标等多类数据。本项目通过配置 `TUSHARE_TOKEN` 调用 Tushare Pro 接口，获取企业分析所需的数据。
+
+ 2.2 数据接入方式
+
+项目通过 `backend/tushare_client.py` 中封装的方法访问 Tushare 数据接口，并在 `backend/services/cache_sync.py` 中完成：
+
+- 数据拉取
+- 空值处理
+- 增量同步
+- 本地入库
+- 主键去重与更新
+
+ 2.3 本地缓存说明
+
+为提高访问效率、降低重复调用成本，并保证系统在演示和分析过程中的稳定性，项目采用 MySQL 本地缓存 方式存储 Tushare 拉取的数据。
+
+缓存策略包括：
+
+- 企业基础信息使用主键覆盖更新
+- 日行情与日度估值数据按 `ts_code + trade_date` 去重
+- 财务数据按 `ts_code + end_date` 去重
+- 使用 `sync_state` 记录上次同步位置，支持增量同步
+
+因此，本项目实际展示和分析使用的是：
+
+- 上游来源：Tushare Pro
+- 本地落地：MySQL 数据表
+- 上层应用：可视化分析、智能问答、报告生成
+
+---
+
+ 3. 本项目实际使用的 Tushare 数据集
+
+根据当前代码实现，项目实际使用了以下 7 个 Tushare 数据集。
+
+ 3.1 `stock_basic`
+
+作用： 获取股票/企业基础信息。
+
+代码位置：
+- `backend/tushare_client.py` → `fetch_stock_basic()`
+- `backend/services/cache_sync.py` → `upsert_stock_basic()`
+
+主要字段：
+- `ts_code`：股票代码
+- `symbol`：股票简称代码
+- `name`：企业名称
+- `area`：地域
+- `industry`：行业
+- `fullname`：企业全称
+- `market`：市场类型
+- `exchange`：交易所
+- `list_status`：上市状态
+- `list_date`：上市日期
+- `delist_date`：退市日期
+- `is_hs`：是否沪深港通标的
+
+本地落表：
+- `company_basic`
+- `industry_stat`（由 `company_basic` 派生统计）
+
+在系统中的用途：
+- 企业搜索
+- 企业基础画像展示
+- 行业分类统计
+- 其他数据同步前的底表准备
+
+---
+
+ 3.2 `daily`
+
+作用： 获取股票日行情数据。
+
+代码位置：
+- `backend/tushare_client.py` → `fetch_daily()`
+- `backend/services/cache_sync.py` → `sync_daily_price()`
+
+主要字段：
+- `ts_code`
+- `trade_date`
+- `open`
+- `high`
+- `low`
+- `close`
+- `pre_close`
+- `change`
+- `pct_chg`
+- `vol`
+- `amount`
+
+本地落表：
+- `daily_price`
+
+在系统中的用途：
+- 企业价格走势图
+- 趋势分析
+- 可视化分析页面数据支撑
+- 问答与报告中的行情变化描述
+
+---
+
+ 3.3 `daily_basic`
+
+作用： 获取股票日度基础指标与估值指标。
+
+代码位置：
+- `backend/tushare_client.py` → `fetch_daily_basic()`
+- `backend/services/cache_sync.py` → `sync_daily_basic()`
+
+主要字段：
+- `ts_code`
+- `trade_date`
+- `turnover_rate`
+- `turnover_rate_f`
+- `volume_ratio`
+- `pe`
+- `pe_ttm`
+- `pb`
+- `ps`
+- `ps_ttm`
+- `dv_ratio`
+- `dv_ttm`
+- `total_share`
+- `float_share`
+- `free_share`
+- `total_mv`
+- `circ_mv`
+
+本地落表：
+- `daily_basic`
+
+在系统中的用途：
+- 估值分析
+- 市值分析
+- 交易活跃度分析
+- 图表展示与报告生成
+
+---
+
+ 3.4 `fina_indicator`
+
+作用： 获取企业财务指标数据。
+
+代码位置：
+- `backend/tushare_client.py` → `fetch_fina_indicator()`
+- `backend/services/cache_sync.py` → `sync_financial_tables()`
+
+主要字段：
+- `ts_code`
+- `ann_date`
+- `end_date`
+- `roe`
+- `roa`
+- `netprofit_margin`
+- `grossprofit_margin`
+- `debt_to_assets`
+- `current_ratio`
+- `quick_ratio`
+- `op_income_yoy`
+- `netprofit_yoy`
+- `eps`
+- `bps`
+- `ocf_to_or`
+
+本地落表：
+- `fina_indicator`
+
+在系统中的用途：
+- 盈利能力分析
+- 偿债能力分析
+- 成长能力分析
+- 风险指标构建
+- 企业运营评分计算
+
+---
+
+ 3.5 `income`
+
+作用： 获取利润表关键数据。
+
+代码位置：
+- `backend/tushare_client.py` → `fetch_income()`
+- `backend/services/cache_sync.py` → `sync_financial_tables()`
+
+主要字段：
+- `ts_code`
+- `ann_date`
+- `end_date`
+- `revenue`
+- `n_income`
+- `operate_profit`
+- `total_profit`
+
+本地落表：
+- `financial_income`
+
+在系统中的用途：
+- 收入分析
+- 净利润分析
+- 经营利润分析
+- 企业成长趋势判断
+
+---
+
+ 3.6 `balancesheet`
+
+作用： 获取资产负债表关键数据。
+
+代码位置：
+- `backend/tushare_client.py` → `fetch_balancesheet()`
+- `backend/services/cache_sync.py` → `sync_financial_tables()`
+
+主要字段：
+- `ts_code`
+- `ann_date`
+- `end_date`
+- `total_assets`
+- `total_liab`
+- `total_hldr_eqy_exc_min_int`
+- `inventories`
+- `accounts_receiv`
+- `monetary_cap`
+
+本地落表：
+- `financial_balancesheet`
+
+在系统中的用途：
+- 资产规模分析
+- 负债结构分析
+- 流动性判断
+- 风险识别
+
+---
+
+ 3.7 `cashflow`
+
+作用： 获取现金流量表关键数据。
+
+代码位置：
+- `backend/tushare_client.py` → `fetch_cashflow()`
+- `backend/services/cache_sync.py` → `sync_financial_tables()`
+
+主要字段：
+- `ts_code`
+- `ann_date`
+- `end_date`
+- `n_cashflow_act`
+- `n_cashflow_inv_act`
+- `n_cash_flows_fnc_act`
+- `free_cashflow`
+
+本地落表：
+- `financial_cashflow`
+
+在系统中的用途：
+- 经营现金流分析
+- 投资与筹资活动分析
+- 自由现金流判断
+- 企业稳健性评估
+
+---
+
+ 4. 数据集与本地数据库映射关系
+
+| Tushare 数据集 | 数据说明 | 本地表名 | 主要用途 |
+|---|---|---|---|
+| `stock_basic` | 企业基础信息 | `company_basic` | 企业搜索、基础信息展示 |
+| `stock_basic` | 行业统计派生 | `industry_stat` | 行业数量统计 |
+| `daily` | 日行情数据 | `daily_price` | 走势分析、价格图表 |
+| `daily_basic` | 日度估值与交易指标 | `daily_basic` | 估值分析、市值分析 |
+| `fina_indicator` | 财务指标 | `fina_indicator` | 盈利/偿债/成长/风险分析 |
+| `income` | 利润表关键数据 | `financial_income` | 收入与利润趋势分析 |
+| `balancesheet` | 资产负债表关键数据 | `financial_balancesheet` | 资产负债结构分析 |
+| `cashflow` | 现金流量表关键数据 | `financial_cashflow` | 现金流与稳健性分析 |
+
+---
+
+ 5. 数据在系统中的使用路径
+
+本项目中，Tushare 数据的使用链路如下：
+
+ 5.1 数据同步阶段
+
+在“企业查询与数据同步”页面中，用户可以：
+
+1. 同步企业基础信息
+2. 搜索企业
+3. 同步单个企业的行情与财务数据
+
+对应后端逻辑：
+
+- `upsert_stock_basic()`：同步企业底表
+- `sync_daily_price()`：同步日行情
+- `sync_daily_basic()`：同步日度指标
+- `sync_financial_tables()`：同步财务数据
+
+ 5.2 数据存储阶段
+
+同步后的数据存入 MySQL，用于：
+
+- 页面查询
+- 可视化图表
+- 指标计算
+- 大模型问答上下文构建
+- 自动报告生成
+
+ 5.3 分析计算阶段
+
+在同步完成后，系统会进一步计算企业运营指标，生成：
+
+- 盈利能力评分
+- 偿债能力评分
+- 成长能力评分
+- 风险评分
+
+这些结果落表到：
+- `enterprise_metrics`
+
+该部分虽然不是 Tushare 原始数据集，但其计算基础来自上述 Tushare 数据。
+
+ 5.4 上层应用阶段
+
+同步与计算结果会被用于：
+
+- 可视化分析页：展示价格、估值、财务趋势与评分情况
+- 智能问答页：结合企业结构化数据生成结论、依据与建议
+- 报告生成页：输出结构化经营分析报告
+
+---
+
+ 6. 数据更新与去重机制说明
+
+本项目针对 Tushare 数据做了增量更新与去重处理，避免重复插入和无效增长。
+
+ 6.1 企业基础信息
+
+`stock_basic` 通过主键 `ts_code` 写入 `company_basic`，使用覆盖更新方式同步最新信息。
+
+ 6.2 日行情与日度指标
+
+- `daily_price` 主键：`(ts_code, trade_date)`
+- `daily_basic` 主键：`(ts_code, trade_date)`
+
+同步时使用：
+- 主键约束
+- `ON DUPLICATE KEY UPDATE`
+- `sync_state` 记录最近同步日期
+
+ 6.3 财务数据
+
+财务类表按 `ts_code + end_date` 作为主键，保证同一报告期数据不会重复写入。
+
+ 6.4 增量同步状态
+
+表 `sync_state` 记录：
+
+- 来源（`tushare`）
+- 数据集名称
+- 企业代码
+- 最近同步日期
+- 最近同步时间
+
+这样可以支持重复点击同步时的增量拉取，减少无效请求。
+
+---
+
+ 7. 本项目当前未直接使用但已预留的相关表
+
+数据库中还预留了以下表，用于后续扩展：
+
+- `research_report`
+- `exchange_fin_report`
+
+这些表目前不属于 Tushare 直接拉取的数据集，而是为后续接入：
+
+- 券商研报
+- 交易所披露信息
+- 外部文本资料解析结果
+
+等扩展场景预留。
+
+---
+
+ 8. 总结
+
+本项目围绕企业经营分析场景，基于 Tushare Pro 构建了较为完整的数据底座。当前实际使用的数据集包括：
+
+1. `stock_basic`
+2. `daily`
+3. `daily_basic`
+4. `fina_indicator`
+5. `income`
+6. `balancesheet`
+7. `cashflow`
+
+这些数据经过本地缓存、清洗、去重与指标计算后，支撑了“智策”系统中的：
+
+- 企业查询
+- 数据同步
+- 可视化分析
+- 智能问答
+- 报告生成
+
+因此，可以将本项目的数据来源概括为：
+
+> 以 Tushare Pro 为核心结构化数据来源，以 MySQL 为本地缓存底座，以智能分析与报告生成为上层应用输出。

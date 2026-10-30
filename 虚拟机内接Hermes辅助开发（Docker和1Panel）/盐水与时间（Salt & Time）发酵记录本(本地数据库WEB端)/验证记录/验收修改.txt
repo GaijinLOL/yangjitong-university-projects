@@ -1,0 +1,11 @@
+cmd|curl -s http://127.0.0.1:18080/api/batches/9
+out|HTTP 200  ->  id=9  status=done  备注=用于持久化与备份验证  观测=1条
+blank|
+cmd|curl -s -X PATCH http://127.0.0.1:18080/api/batches/9 -d '{"note":"验收现场改的备注：坛沿水每天换，改成了隔天换"}'
+out|HTTP 200  ->  备注=验收现场改的备注：坛沿水每天换，改成了隔天换
+blank|
+cmd|curl -s http://127.0.0.1:18080/api/batches/9      # 重新查询确认已落库
+out|HTTP 200  ->  备注=验收现场改的备注：坛沿水每天换，改成了隔天换
+blank|
+cmd|curl -s -X PATCH http://127.0.0.1:18080/api/batches/9 -d '{"note":"井盐 + 干辣椒 + 一把花椒。坛沿水每天换一次。"}'   # 改回原值
+out|HTTP 200  ->  备注=井盐 + 干辣椒 + 一把花椒。坛沿水每天换一次。

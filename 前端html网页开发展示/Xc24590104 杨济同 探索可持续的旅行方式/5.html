@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>旅行故事 - 绿途</title>
+    <link rel="stylesheet" href="css/s.css">
+</head>
+<body>
+    <header class="main-header">
+        <nav class="navbar">
+            <div class="logo">
+                <img src="images/1012.gif" alt="绿途可持续旅行">
+            </div>
+            <ul class="nav-links">
+                <li><a href="3.html">首页</a></li>
+                <li><a href="4.html">生态目的地</a></li>
+                <li class="active"><a href="5.html">旅行故事</a></li>
+                <li><a href="6.html">联系</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1>旅行者故事集</h1>
+                <p>聆听全球环保实践者的真实经历</p>
+            </div>
+        </section>
+        <section class="story-container">
+            <!-- 故事卡片1 -->
+            <article class="story-card">
+                <div class="story-header">
+                    <img src="images/777.jpg" alt="旅行者" class="avatar">
+                    <div class="author-info">
+                        <h3>李晓晓</h3>
+                        <time>2025.05.20</time>
+                    </div>
+                </div>
+                <img src="images/111.jpg" alt="巴厘岛故事" class="story-img">
+                <div class="story-content">
+                    <h2>塑料重生计划 - 巴厘岛生态周记</h2>
+                    <p>在乌布当地环保组织的带领下，我们每天清晨参与海滩清理...</p>
+                    <div class="interaction">
+                        <span class="likes">❤️ 235次点赞</span>
+                        <a href="#" class="cta-button mini" onclick="toggleComments(this, event)">查看45条评论</a>
+                    </div>
+                    <div class="comments" style="display: none;">
+                        <h3>评论区</h3>
+                        <ul>
+                            <li>李小勇：这个项目太棒了，希望能有更多人参与！</li>
+                            <li>冯大吉：海滩清理很有意义，期待看到更多成果。</li>
+                            <!-- 更多评论 -->
+                        </ul>
+                    </div>
+                </div>
+            </article>
+            <!-- 故事卡片2 -->
+            <article class="story-card">
+                <div class="story-header">
+                    <img src="images/666.jpg" alt="旅行者" class="avatar">
+                    <div class="author-info">
+                        <h3>王浩然</h3>
+                        <time>2025.05.18</time>
+                    </div>
+                </div>
+                <img src="images/555.jpg" alt="北欧故事" class="story-img">
+                <div class="story-content">
+                    <h2>北极圈内的可持续生活实验</h2>
+                    <p>在挪威斯瓦尔巴群岛，我们住进完全依靠风能和太阳能的生态舱...</p>
+                    <div class="interaction">
+                        <span class="likes">❤️ 189次点赞</span>
+                        <a href="#" class="cta-button mini" onclick="toggleComments(this, event)">查看32条评论</a>
+                    </div>
+                    <div class="comments" style="display: none;">
+                        <h3>评论区</h3>
+                        <ul>
+                            <li>用户C：好想去体验这种生活！</li>
+                            <li>用户D：很有创意的实验，为环保助力。</li>
+                            <!-- 更多评论 -->
+                        </ul>
+                    </div>
+                </div>
+            </article>
+        </section>
+    </main>
+    <footer class="main-footer">
+        <!-- 与首页相同的页脚 -->
+    </footer>
+    <script>
+        function toggleComments(button, event) {
+            event.preventDefault();
+            const comments = button.parentNode.nextElementSibling;
+            if (comments.style.display === "none") {
+                comments.style.display = "block";
+                button.textContent = "收起评论";
+                comments.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                comments.style.display = "none";
+                button.textContent = "查看评论";
+            }
+        }
+    </script>
+</body>
+</html>

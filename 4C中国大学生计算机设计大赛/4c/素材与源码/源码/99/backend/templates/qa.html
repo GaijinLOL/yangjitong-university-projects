@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% block title %}智能问答 - 企业经营分析助手{% endblock %}
+
+{% block content %}
+  <section class="hero-card mb-4">
+    <div class="hero-content row g-4 align-items-center">
+      <div class="col-lg-7">
+        <span class="section-label mb-3">企业分析问答</span>
+        <h1 class="h2">智能问答工作台</h1>
+        <div class="text-muted fs-5 mb-4">输入企业代码、行业和问题，系统会结合本地数据给出经营结论、依据、风险提示与后续验证建议，并展示四灯置信度。</div>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="badge-soft primary">经营结论</span>
+          <span class="badge-soft success">四灯置信度</span>
+          <span class="badge-soft warning">风险提示</span>
+          <span class="badge-soft danger">兼顾投资辅助参考</span>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="highlight-grid">
+          <div class="metric-card"><div class="metric-label">回答结构</div><div class="metric-value">4 段式</div><div class="metric-hint">结论、依据、风险、后续验证</div></div>
+          <div class="metric-card"><div class="metric-label">安全边界</div><div class="metric-value">不编造</div><div class="metric-hint">不承诺收益，不给精确买卖点</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="row g-3 mb-4">
+    <div class="col-lg-7">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div><div class="fw-semibold">提问区</div><div class="small text-muted">可填写 ts_code、行业、问题内容</div></div>
+          <span class="badge-soft primary">Ask AI</span>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-4"><label class="form-label">ts_code</label><input class="form-control" id="ts_code" placeholder="例如 000001.SZ" value="{{ request.args.get('ts_code', '') }}" /></div>
+            <div class="col-md-4"><label class="form-label">行业（可选）</label><input class="form-control" id="industry" placeholder="例如 银行" /></div>
+            <div class="col-md-12"><label class="form-label">问题</label><input class="form-control" id="question" placeholder="例如：这家企业经营质量如何？主要风险和后续关注点是什么？" /></div>
+            <div class="col-12 d-grid d-md-flex justify-content-md-end"><button class="btn btn-primary" onclick="ask()">开始提问</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="card h-100">
+        <div class="card-header"><div class="fw-semibold">推荐提问方式</div><div class="small text-muted">更适合企业经营分析展示的提问模板</div></div>
+        <div class="card-body">
+          <ul class="list-clean">
+            <li><span class="badge-soft">经营诊断</span><div class="mt-2 text-muted">这家企业当前的盈利、成长和风险特征如何？</div></li>
+            <li><span class="badge-soft">风险识别</span><div class="mt-2 text-muted">目前最值得管理层或分析人员关注的风险点是什么？</div></li>
+            <li><span class="badge-soft">扩展参考</span><div class="mt-2 text-muted">如果从投资者视角观察，这家上市公司的基本面有哪些可参考信息？</div></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="row g-3 mb-4">
+    <div class="col-lg-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div><div class="fw-semibold">四灯置信度</div><div class="small text-muted">根据数据完整度与问题类型自动评估</div></div>
+          <div id="confidenceBadge" class="confidence-pill light-red">红灯 / 待生成</div>
+        </div>
+        <div class="card-body">
+          <div id="confidenceScore" class="confidence-score">--</div>
+          <div id="confidenceDesc" class="text-muted mb-3">尚未生成回答</div>
+          <div class="small fw-semibold mb-2">判定依据</div>
+          <ul id="confidenceReasons" class="list-clean small text-muted"></ul>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div><div class="fw-semibold">分析帮助指引</div><div class="small text-muted">主用于经营分析展示，也可补充投资辅助参考</div></div>
+          <span class="badge-soft success">Analysis Guidance</span>
+        </div>
+        <div class="card-body">
+          <div id="guidanceSummary" class="mb-3 text-muted">等待生成。</div>
+          <div class="row g-3">
+            <div class="col-md-6"><div class="feature-card"><div class="fw-semibold mb-2">值得关注的点</div><ul id="guidanceStrengths" class="list-clean small text-muted"></ul></div></div>
+            <div class="col-md-6"><div class="feature-card"><div class="fw-semibold mb-2">主要风险</div><ul id="guidanceRisks" class="list-clean small text-muted"></ul></div></div>
+            <div class="col-md-12"><div class="feature-card"><div class="fw-semibold mb-2">下一步建议</div><ul id="guidanceActions" class="list-clean small text-muted"></ul></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <div><div class="fw-semibold">回答进度</div><div class="small text-muted">实时展示智能回答生成阶段与耗时</div></div>
+      <div class="status-inline" id="qaStatus">等待提问</div>
+    </div>
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div id="qaProgressMessage" class="fw-semibold">等待提交问题</div>
+        <div id="qaProgressPercent" class="small text-muted">0%</div>
+      </div>
+      <div class="progress report-progress mb-3" role="progressbar" aria-label="智能回答进度" aria-valuemin="0" aria-valuemax="100">
+        <div id="qaProgressBar" class="progress-bar" style="width: 0%"></div>
+      </div>
+      <div id="qaJobMeta" class="small text-muted mb-3">暂无任务</div>
+      <div class="report-steps qa-steps">
+        <div class="report-step" data-stage="queued"><span></span><div><strong>提交问题</strong><small>创建智能问答任务</small></div></div>
+        <div class="report-step" data-stage="context"><span></span><div><strong>读取上下文</strong><small>读取企业、行业与本地数据</small></div></div>
+        <div class="report-step" data-stage="evidence"><span></span><div><strong>整理证据</strong><small>整理数据依据与问题边界</small></div></div>
+        <div class="report-step" data-stage="generating"><span></span><div><strong>生成回答</strong><small>调用智能模型生成分析内容</small></div></div>
+        <div class="report-step" data-stage="wrapping"><span></span><div><strong>整理结果</strong><small>汇总置信度和分析指引</small></div></div>
+        <div class="report-step" data-stage="done"><span></span><div><strong>完成</strong><small>回答已可查看</small></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <div><div class="fw-semibold">智能回答</div><div class="small text-muted">回答会尽量引用给定数据，并提醒边界与不确定性</div></div>
+      <div class="status-inline" id="qaContentStatus">等待提问</div>
+    </div>
+    <div class="card-body"><pre id="answerBox" style="white-space: pre-wrap;">请输入问题后开始生成回答。</pre></div>
+  </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function renderList(id, items) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const list = (items || []).length ? items : ['暂无'];
+  el.innerHTML = list.map(x => `<li>${x}</li>`).join('');
+}
+function renderConfidence(conf) {
+  const badge = document.getElementById('confidenceBadge');
+  const score = document.getElementById('confidenceScore');
+  const desc = document.getElementById('confidenceDesc');
+  const reasons = document.getElementById('confidenceReasons');
+  if (!conf) return;
+  const key = conf.light?.key || 'red';
+  badge.className = `confidence-pill light-${key}`;
+  badge.textContent = `${conf.light?.label || '红灯'} / ${conf.light?.desc || ''}`;
+  score.textContent = `${conf.score ?? '--'} 分`;
+  desc.textContent = `缺失项：${(conf.missing || []).join('、') || '无明显缺失'}`;
+  reasons.innerHTML = (conf.reasons || []).map(x => `<li>${x}</li>`).join('');
+}
+function renderGuidance(g) {
+  if (!g) return;
+  document.getElementById('guidanceSummary').textContent = g.summary || '暂无';
+  renderList('guidanceStrengths', g.strengths);
+  renderList('guidanceRisks', g.risks);
+  renderList('guidanceActions', g.actions);
+}
+const qaStageOrder = ['queued', 'context', 'evidence', 'generating', 'wrapping', 'done'];
+function updateQaProgress(job, elapsed) {
+  const progress = Math.max(0, Math.min(100, Number(job?.progress ?? 0)));
+  const stage = job?.stage || 'queued';
+  const message = job?.message || '等待提问';
+  const status = document.getElementById('qaStatus');
+  const contentStatus = document.getElementById('qaContentStatus');
+  const bar = document.getElementById('qaProgressBar');
+  const percent = document.getElementById('qaProgressPercent');
+  const msg = document.getElementById('qaProgressMessage');
+  const meta = document.getElementById('qaJobMeta');
+  bar.style.width = `${progress}%`;
+  bar.textContent = progress >= 12 ? `${progress}%` : '';
+  percent.textContent = `${progress}%`;
+  msg.textContent = message;
+  const elapsedText = elapsed == null ? '' : `，已耗时 ${elapsed}s`;
+  meta.textContent = job?.job_id ? `任务编号：${job.job_id}${elapsedText}` : `当前阶段：${stage}${elapsedText}`;
+  if (status) status.textContent = job?.status === 'done' ? `完成 (${elapsed || 0}s)` : job?.status === 'error' ? '生成失败' : `生成中... (${elapsed || 0}s)`;
+  if (contentStatus) contentStatus.textContent = job?.status === 'done' ? '已生成' : job?.status === 'error' ? '生成失败' : '等待结果';
+
+  const currentIndex = qaStageOrder.indexOf(stage);
+  document.querySelectorAll('.qa-steps .report-step').forEach(step => {
+    const stepStage = step.dataset.stage;
+    const stepIndex = qaStageOrder.indexOf(stepStage);
+    step.classList.toggle('is-active', stepStage === stage);
+    step.classList.toggle('is-done', currentIndex > stepIndex || (stage === 'done' && stepStage === 'done'));
+  });
+}
+async function ask() {
+  const ts_code = document.getElementById('ts_code').value.trim();
+  const industry = document.getElementById('industry').value.trim();
+  const question = document.getElementById('question').value.trim();
+  const box = document.getElementById('answerBox');
+  if (!question) { box.textContent = '请先输入问题。'; return; }
+  updateQaProgress({status: 'queued', progress: 5, stage: 'queued', message: '问题已提交，正在创建智能问答任务'}, 0);
+  box.textContent = '';
+  try {
+    const r = await fetch('/api/qa', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({question, ts_code: ts_code || null, industry: industry || null}) });
+    const j = await r.json();
+    if (!j.ok) {
+      updateQaProgress({status: 'error', progress: 100, stage: 'error', message: '智能问答任务提交失败'}, 0);
+      box.textContent = '当前智能问答暂时不可用，请稍后重试。';
+      return;
+    }
+    const jobId = j.job_id;
+    if (!jobId) {
+      updateQaProgress({status: 'error', progress: 100, stage: 'error', message: '未获取到任务编号'}, 0);
+      box.textContent = '当前智能问答暂时不可用，请稍后重试。';
+      return;
+    }
+    const startedAt = Date.now();
+    while (true) {
+      await new Promise(res => setTimeout(res, 1000));
+      const rs = await fetch(`/api/qa/status?job_id=${encodeURIComponent(jobId)}`);
+      const js = await rs.json();
+      const elapsed = Math.round((Date.now() - startedAt) / 1000);
+      if (!js.ok) {
+        updateQaProgress({status: 'error', progress: 100, stage: 'error', message: '获取回答进度失败'}, elapsed);
+        box.textContent = '当前智能问答暂时不可用，请稍后重试。';
+        return;
+      }
+      const job = {...(js.job || {}), job_id: jobId};
+      updateQaProgress(job, elapsed);
+      if (job.status === 'done') {
+        const result = job.result || {};
+        box.textContent = result.answer || '';
+        renderConfidence(result.confidence);
+        renderGuidance(result.investor_guidance);
+        return;
+      }
+      if (job.status === 'error') {
+        box.textContent = '当前智能问答暂时不可用，请稍后重试。';
+        return;
+      }
+    }
+  } catch (e) {
+    updateQaProgress({status: 'error', progress: 100, stage: 'error', message: '智能问答请求失败'}, 0);
+    box.textContent = '当前智能问答暂时不可用，请稍后重试。';
+  }
+}
+</script>
+{% endblock %}
+

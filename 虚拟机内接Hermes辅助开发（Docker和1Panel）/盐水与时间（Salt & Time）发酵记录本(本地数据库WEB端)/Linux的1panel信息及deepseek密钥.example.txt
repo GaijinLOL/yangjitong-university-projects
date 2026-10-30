@@ -1,0 +1,6 @@
+# 本机服务配置模板（请勿提交真实密钥）
+DEEPSEEK_API_KEY=your_deepseek_api_key
+DEEPSEEK_BASE_URL=http://127.0.0.1:21168/your-proxy-path
+PANEL_HOST=your_panel_host
+PANEL_USERNAME=your_username
+PANEL_PASSWORD=your_password

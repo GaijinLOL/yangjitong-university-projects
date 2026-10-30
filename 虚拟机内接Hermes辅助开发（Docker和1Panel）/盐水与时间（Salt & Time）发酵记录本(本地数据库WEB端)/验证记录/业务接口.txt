@@ -1,0 +1,20 @@
+cmd|curl -s -X POST http://127.0.0.1:18080/api/batches -d '{"name":"接口验证 · 白萝卜","kind":"泡菜",...}'
+out|HTTP 201  ->  id=13  name=接口验证 · 白萝卜  status=fermenting
+blank|
+cmd|curl -s http://127.0.0.1:18080/api/batches/13
+out|HTTP 200  ->  id=13  接口验证 · 白萝卜  泡菜  玻璃罐 2L  盐度5%  第0天  观测0条
+blank|
+cmd|curl -s -X POST http://127.0.0.1:18080/api/batches/13/readings -d '{"temp_c":24.5,"ph":4.6,"aroma":"脆，微酸"}'
+out|HTTP 201  ->  观测 id=15  温度24.5℃  pH4.6  该坛观测数=1
+blank|
+cmd|curl -s -X PATCH http://127.0.0.1:18080/api/batches/13 -d '{"status":"done"}'
+out|HTTP 200  ->  status=fermenting → done
+blank|
+cmd|curl -s -X DELETE http://127.0.0.1:18080/api/batches/13
+out|HTTP 200  ->  {"ok": true, "deleted": 13}
+blank|
+cmd|curl -s http://127.0.0.1:18080/api/batches/13    # 删除后再查
+out|HTTP 404  ->  {"error": "没找到这一坛"}
+blank|
+cmd|curl -s http://127.0.0.1:18080/api/stats
+out|HTTP 200  ->  total=7  fermenting=4  done=2  failed=1  readings=10

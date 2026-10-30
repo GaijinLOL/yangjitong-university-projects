@@ -1,0 +1,200 @@
+﻿{% extends "base.html" %}
+{% block title %}报告生成 - 企业经营分析报告{% endblock %}
+
+{% block content %}
+  <section class="hero-card mb-4">
+    <div class="hero-content row g-4 align-items-center">
+      <div class="col-lg-7">
+        <span class="section-label mb-3">经营分析报告</span>
+        <h1 class="h2">分析报告生成中心</h1>
+        <div class="text-muted fs-5 mb-4">系统将基于本地行情、估值、财务与评分数据，生成更适合展示、汇报和讨论的企业经营分析报告，并同步展示四灯置信度。</div>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="badge-soft primary">经营诊断</span>
+          <span class="badge-soft success">估值与市场观察</span>
+          <span class="badge-soft warning">风险提示</span>
+          <span class="badge-soft danger">兼顾投资参考</span>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="highlight-grid">
+          <div class="metric-card"><div class="metric-label">报告目标</div><div class="metric-value">可展示</div><div class="metric-hint">适合演示、汇报与经营讨论</div></div>
+          <div class="metric-card"><div class="metric-label">风控机制</div><div class="metric-value">四灯分级</div><div class="metric-hint">先看置信度，再看结论</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <div><div class="fw-semibold">报告参数设置</div><div class="small text-muted">填写企业代码和目标后开始生成</div></div>
+      <span class="badge-soft primary">Generate</span>
+    </div>
+    <div class="card-body">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-4"><label class="form-label">ts_code</label><input class="form-control" id="ts_code" value="{{ ts_code }}" placeholder="例如 000001.SZ" /></div>
+        <div class="col-md-8"><label class="form-label">报告目标（可选）</label><input class="form-control" id="goal" placeholder="例如：面向汇报场景，总结企业经营表现、风险与后续关注点" /></div>
+        <div class="col-12 d-grid d-md-flex justify-content-md-end"><button class="btn btn-primary" onclick="gen()">生成报告</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="row g-3 mb-4">
+    <div class="col-lg-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div><div class="fw-semibold">四灯置信度</div><div class="small text-muted">根据数据完整度与问题边界自动打分</div></div>
+          <div id="reportConfidenceBadge" class="confidence-pill light-red">红灯 / 待生成</div>
+        </div>
+        <div class="card-body">
+          <div id="reportConfidenceScore" class="confidence-score">--</div>
+          <div id="reportConfidenceDesc" class="text-muted mb-3">尚未生成</div>
+          <ul id="reportConfidenceReasons" class="list-clean small text-muted"></ul>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div><div class="fw-semibold">分析帮助指引</div><div class="small text-muted">主用于经营分析展示，也可补充上市公司研究参考</div></div>
+          <span class="badge-soft success">Quick Guide</span>
+        </div>
+        <div class="card-body">
+          <div id="reportGuidanceSummary" class="mb-3 text-muted">等待生成。</div>
+          <div class="row g-3">
+            <div class="col-md-6"><div class="feature-card"><div class="fw-semibold mb-2">优势</div><ul id="reportGuidanceStrengths" class="list-clean small text-muted"></ul></div></div>
+            <div class="col-md-6"><div class="feature-card"><div class="fw-semibold mb-2">风险</div><ul id="reportGuidanceRisks" class="list-clean small text-muted"></ul></div></div>
+            <div class="col-md-12"><div class="feature-card"><div class="fw-semibold mb-2">后续建议</div><ul id="reportGuidanceActions" class="list-clean small text-muted"></ul></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <div><div class="fw-semibold">生成进度</div><div class="small text-muted">实时展示当前报告生成阶段与耗时</div></div>
+      <div class="status-inline" id="repStatus">等待生成</div>
+    </div>
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div id="reportProgressMessage" class="fw-semibold">等待提交生成任务</div>
+        <div id="reportProgressPercent" class="small text-muted">0%</div>
+      </div>
+      <div class="progress report-progress mb-3" role="progressbar" aria-label="报告生成进度" aria-valuemin="0" aria-valuemax="100">
+        <div id="reportProgressBar" class="progress-bar" style="width: 0%"></div>
+      </div>
+      <div id="reportJobMeta" class="small text-muted mb-3">暂无任务</div>
+      <div class="report-steps">
+        <div class="report-step" data-stage="queued"><span></span><div><strong>提交任务</strong><small>创建报告生成任务</small></div></div>
+        <div class="report-step" data-stage="collecting"><span></span><div><strong>读取数据</strong><small>读取企业、行情、估值与财务数据</small></div></div>
+        <div class="report-step" data-stage="analyzing"><span></span><div><strong>分析置信度</strong><small>计算数据完整度与四灯分级</small></div></div>
+        <div class="report-step" data-stage="prompting"><span></span><div><strong>组织报告材料</strong><small>整理目标、证据和生成约束</small></div></div>
+        <div class="report-step" data-stage="generating"><span></span><div><strong>生成正文</strong><small>调用大模型输出经营分析报告</small></div></div>
+        <div class="report-step" data-stage="wrapping"><span></span><div><strong>整理结果</strong><small>汇总报告、置信度和指引</small></div></div>
+        <div class="report-step" data-stage="done"><span></span><div><strong>完成</strong><small>报告已可查看</small></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <div><div class="fw-semibold">报告内容</div><div class="small text-muted">生成后可直接用于展示、讨论和二次整理</div></div>
+      <div class="status-inline" id="repContentStatus">等待生成</div>
+    </div>
+    <div class="card-body"><pre id="reportBox" style="white-space: pre-wrap;">请输入 ts_code 并点击“生成报告”。</pre></div>
+  </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function renderList(id, items) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const list = (items || []).length ? items : ['暂无'];
+  el.innerHTML = list.map(x => `<li>${x}</li>`).join('');
+}
+function renderReportConfidence(conf) {
+  if (!conf) return;
+  const badge = document.getElementById('reportConfidenceBadge');
+  badge.className = `confidence-pill light-${conf.light?.key || 'red'}`;
+  badge.textContent = `${conf.light?.label || '红灯'} / ${conf.light?.desc || ''}`;
+  document.getElementById('reportConfidenceScore').textContent = `${conf.score ?? '--'} 分`;
+  document.getElementById('reportConfidenceDesc').textContent = `缺失项：${(conf.missing || []).join('、') || '无明显缺失'}`;
+  renderList('reportConfidenceReasons', conf.reasons);
+}
+function renderReportGuidance(g) {
+  if (!g) return;
+  document.getElementById('reportGuidanceSummary').textContent = g.summary || '暂无';
+  renderList('reportGuidanceStrengths', g.strengths);
+  renderList('reportGuidanceRisks', g.risks);
+  renderList('reportGuidanceActions', g.actions);
+}
+const reportStageOrder = ['queued', 'starting', 'collecting', 'analyzing', 'prompting', 'generating', 'wrapping', 'done'];
+function updateReportProgress(job, elapsed) {
+  const progress = Math.max(0, Math.min(100, Number(job?.progress ?? 0)));
+  const stage = job?.stage || 'queued';
+  const message = job?.message || '等待生成';
+  const status = document.getElementById('repStatus');
+  const contentStatus = document.getElementById('repContentStatus');
+  const bar = document.getElementById('reportProgressBar');
+  const percent = document.getElementById('reportProgressPercent');
+  const msg = document.getElementById('reportProgressMessage');
+  const meta = document.getElementById('reportJobMeta');
+  bar.style.width = `${progress}%`;
+  bar.textContent = progress >= 12 ? `${progress}%` : '';
+  percent.textContent = `${progress}%`;
+  msg.textContent = message;
+  const elapsedText = elapsed == null ? '' : `，已耗时 ${elapsed}s`;
+  meta.textContent = job?.job_id ? `任务编号：${job.job_id}${elapsedText}` : `当前阶段：${stage}${elapsedText}`;
+  if (status) status.textContent = job?.status === 'done' ? `完成 (${elapsed || 0}s)` : job?.status === 'error' ? '生成失败' : `生成中... (${elapsed || 0}s)`;
+  if (contentStatus) contentStatus.textContent = job?.status === 'done' ? '已生成' : job?.status === 'error' ? '生成失败' : '等待结果';
+
+  const currentIndex = reportStageOrder.indexOf(stage);
+  document.querySelectorAll('.report-step').forEach(step => {
+    const stepStage = step.dataset.stage;
+    const stepIndex = reportStageOrder.indexOf(stepStage);
+    step.classList.toggle('is-active', stepStage === stage || (stage === 'starting' && stepStage === 'queued'));
+    step.classList.toggle('is-done', currentIndex > stepIndex || (stage === 'done' && stepStage === 'done'));
+  });
+}
+function getReportText(report) {
+  if (!report) return '';
+  if (typeof report === 'string') return report;
+  return report.answer || report.report || report.content || JSON.stringify(report, null, 2);
+}
+async function gen() {
+  const ts_code = document.getElementById('ts_code').value.trim();
+  const goal = document.getElementById('goal').value.trim();
+  const status = document.getElementById('repStatus');
+  const box = document.getElementById('reportBox');
+  if (!ts_code) { box.textContent = '请先输入 ts_code'; return; }
+  const initialJob = {status: 'queued', progress: 5, stage: 'queued', message: '任务已提交，正在创建报告生成任务'};
+  updateReportProgress(initialJob, 0);
+  status.textContent = '已提交任务，生成中...';
+  box.textContent = '';
+  const r = await fetch('/api/report', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ts_code, goal: goal || null}) });
+  const j = await r.json();
+  if (!j.ok) { updateReportProgress({status: 'error', progress: 100, stage: 'error', message: '报告生成任务提交失败'}, 0); box.textContent = '当前服务暂时不可用，请稍后重试。'; return; }
+  const jobId = j.job_id;
+  if (!jobId) { updateReportProgress({status: 'error', progress: 100, stage: 'error', message: '未获取到任务编号'}, 0); box.textContent = '当前服务暂时不可用，请稍后重试。'; return; }
+  const startedAt = Date.now();
+  while (true) {
+    await new Promise(res => setTimeout(res, 1200));
+    const rs = await fetch(`/api/report/status?job_id=${encodeURIComponent(jobId)}`);
+    const js = await rs.json();
+    if (!js.ok) { updateReportProgress({status: 'error', progress: 100, stage: 'error', message: '获取生成进度失败'}, Math.round((Date.now() - startedAt) / 1000)); box.textContent = '当前服务暂时不可用，请稍后重试。'; return; }
+    const job = {...(js.job || {}), job_id: jobId};
+    const elapsed = Math.round((Date.now() - startedAt) / 1000);
+    updateReportProgress(job, elapsed);
+    if (job.status === 'done') {
+      box.textContent = getReportText(job.report);
+      if (job.report?.confidence) renderReportConfidence(job.report.confidence);
+      if (job.report?.investor_guidance) renderReportGuidance(job.report.investor_guidance);
+      return;
+    }
+    if (job.status === 'error') { box.textContent = '当前服务暂时不可用，请稍后重试。'; return; }
+  }
+}
+</script>
+{% endblock %}
+

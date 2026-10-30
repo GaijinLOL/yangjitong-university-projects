@@ -1,0 +1,104 @@
+﻿{% extends "base.html" %}
+{% block title %}可视化分析 - 企业经营分析与决策支持系统{% endblock %}
+
+{% block content %}
+  <section class="hero-card mb-4">
+    <div class="hero-content row g-4 align-items-center">
+      <div class="col-lg-7">
+        <span class="section-label mb-3">企业洞察看板</span>
+        <h1 class="h2">可视化分析中心</h1>
+        <div class="text-muted fs-5 mb-4">围绕价格趋势、估值变化、财务关键指标与多维运营评分，帮助用户快速理解企业经营状态，并在需要时补充上市公司研究参考。</div>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="badge-soft primary">价格走势</span>
+          <span class="badge-soft success">估值与市值</span>
+          <span class="badge-soft warning">财务趋势</span>
+          <span class="badge-soft danger">运营评分</span>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="highlight-grid">
+          <div class="metric-card"><div class="metric-label">图表类型</div><div class="metric-value">3 大类</div><div class="metric-hint">趋势、估值、财务与评分联动展示</div></div>
+          <div class="metric-card"><div class="metric-label">适合场景</div><div class="metric-value">展示 + 分析</div><div class="metric-hint">适合演示、汇报和经营讨论时边讲边展示</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3 align-items-end">
+        <div class="col-lg-6"><label class="form-label">ts_code</label><input class="form-control" id="ts_code" value="{{ ts_code }}" placeholder="例如 000001.SZ" /></div>
+        <div class="col-lg-6 d-grid d-md-flex justify-content-md-end gap-2"><button class="btn btn-outline-primary" onclick="loadProfile()">加载概况</button><button class="btn btn-primary" onclick="loadCharts()">加载完整看板</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="row g-3 mb-4">
+    <div class="col-lg-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center"><div><div class="fw-semibold">企业概况</div><div class="small text-muted">展示企业基本信息与最新评分期末</div></div><span class="badge-soft primary">Profile</span></div>
+        <div class="card-body"><div id="profileBox" class="text-muted">请输入 ts_code 后加载。</div></div>
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center"><div><div class="fw-semibold">运营评分（最新一期）</div><div class="small text-muted">盈利、偿债、成长与风险多维雷达图</div></div><span class="badge-soft success">Score Radar</span></div>
+        <div class="card-body"><div id="scoreChart" style="height: 300px;"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="row g-3">
+    <div class="col-12"><div class="card"><div class="card-header d-flex justify-content-between align-items-center"><div><div class="fw-semibold">价格趋势（收盘价）</div><div class="small text-muted">展示市场表现变化，可作为经营分析之外的辅助观察维度</div></div><span class="badge-soft primary">Price</span></div><div class="card-body"><div id="priceChart" style="height: 320px;"></div></div></div></div>
+    <div class="col-12"><div class="card"><div class="card-header d-flex justify-content-between align-items-center"><div><div class="fw-semibold">估值与市值（PE / PB / 总市值）</div><div class="small text-muted">帮助理解市场定价与估值波动，适合补充上市公司观察视角</div></div><span class="badge-soft warning">Valuation</span></div><div class="card-body"><div id="valuationChart" style="height: 320px;"></div></div></div></div>
+    <div class="col-12"><div class="card"><div class="card-header d-flex justify-content-between align-items-center"><div><div class="fw-semibold">财务关键指标趋势</div><div class="small text-muted">ROE、净利率、负债率、增长能力等关键指标联动展示</div></div><span class="badge-soft danger">Finance</span></div><div class="card-body"><div id="finaChart" style="height: 360px;"></div></div></div></div>
+  </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadProfile() {
+  const ts_code = document.getElementById('ts_code').value.trim();
+  const box = document.getElementById('profileBox');
+  if (!ts_code) { box.textContent = '请先输入 ts_code'; return; }
+  box.textContent = '加载中...';
+  const r = await fetch(`/api/company/profile?ts_code=${encodeURIComponent(ts_code)}`);
+  const j = await r.json();
+  if (!j.ok) { box.textContent = JSON.stringify(j, null, 2); return; }
+  const c = j.company;
+  const m = j.latest_metrics;
+  box.innerHTML = `
+    <div class="fw-semibold fs-5">${c?.name || '-'} <span class="text-muted fs-6">(${c?.ts_code || '-'})</span></div>
+    <div class="mt-3 d-flex flex-column gap-2">
+      <div><span class="text-muted">行业：</span>${c?.industry || '-'}</div>
+      <div><span class="text-muted">地区：</span>${c?.area || '-'}</div>
+      <div><span class="text-muted">交易所：</span>${c?.exchange || '-'} / ${c?.market || '-'}</div>
+      <div><span class="text-muted">上市日期：</span>${c?.list_date || '-'}</div>
+      <div><span class="text-muted">最新评分期末：</span>${m?.end_date || '-'}</div>
+    </div>
+  `;
+  if (m) renderScoreChart(m);
+}
+function renderScoreChart(m) {
+  const chart = echarts.init(document.getElementById('scoreChart'));
+  const data = [
+    {name: '盈利能力', value: m.profitability_score ?? null},
+    {name: '偿债能力', value: m.solvency_score ?? null},
+    {name: '成长能力', value: m.growth_score ?? null},
+    {name: '风险水平(高=风险高)', value: m.risk_score ?? null},
+  ];
+  chart.setOption({ tooltip: {trigger: 'item'}, radar: { indicator: data.map(d => ({name: d.name, max: 100})), axisName: {color: '#475467'} }, series: [{ type: 'radar', areaStyle: {color: 'rgba(37,99,235,0.22)'}, lineStyle: {color: '#2563eb'}, itemStyle: {color: '#7c3aed'}, data: [{value: data.map(d => d.value || 0)}] }] });
+}
+async function loadCharts() {
+  const ts_code = document.getElementById('ts_code').value.trim();
+  if (!ts_code) return;
+  await loadProfile();
+  const r = await fetch(`/api/company/timeseries?ts_code=${encodeURIComponent(ts_code)}`);
+  const j = await r.json();
+  if (!j.ok) return;
+  renderPriceChart(j.data.prices);
+  renderValuationChart(j.data.basics);
+  renderFinaChart(j.data.fina);
+}
+</script>
+{% endblock %}

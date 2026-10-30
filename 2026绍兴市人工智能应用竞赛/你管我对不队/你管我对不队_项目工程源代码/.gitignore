@@ -1,0 +1,27 @@
+# 便携运行时（体积巨大，随包分发，不进版本管理）
+runtime_cpu/
+runtime_cuda/
+
+# 竞赛数据集与材料（体积大）
+绍兴市第一届大学生人工智能应用竞赛（核心要求）/
+
+# 运行产物
+outputs/
+__pycache__/
+*.pyc
+.ultralytics/
+.cache/
+.ipynb_checkpoints/
+
+# 编辑器 / 工具配置
+.cursor/
+.codewhale/
+.vscode/
+.idea/
+
+# Ȩ�ر����ļ��������ڴ��̹����ˣ������汾�⣩
+*.bak
+
+# training data & runs (large, not versioned)
+dataset/
+runs/

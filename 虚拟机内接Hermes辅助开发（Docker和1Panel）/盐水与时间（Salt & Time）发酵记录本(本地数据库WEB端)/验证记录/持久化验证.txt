@@ -1,0 +1,47 @@
+=========== 重启前 ===========
+$ docker compose ps
+salt-time-app	Up 2 hours (healthy)
+salt-time-db	Up 2 hours (healthy)
+
+记录 id=9 重启前:
+{"id": 9, "name": "课程设计验证 · 白萝卜", "status": "done", "salt_pct": 5, "reading_count": 1, "last_temp": 24.5, "last_ph": 4.6}
+
+容器启动时间(重启前):
+/salt-time-app StartedAt=2026-10-25T04:18:11.094968654Z
+/salt-time-db StartedAt=2026-10-25T04:18:05.219835478Z
+
+=========== 执行重启 ===========
+$ docker compose restart
+ Container salt-time-db Restarting 
+ Container salt-time-app Restarting 
+ Container salt-time-app Started 
+ Container salt-time-db Started 
+
+等待健康检查...
+第 4 次检查: app=healthy db=healthy
+
+=========== 重启后 ===========
+salt-time-app	Up 7 seconds (healthy)
+salt-time-db	Up 7 seconds (healthy)
+
+容器启动时间(重启后):
+/salt-time-app StartedAt=2026-10-25T06:01:44.606432706Z
+/salt-time-db StartedAt=2026-10-25T06:01:44.610150098Z
+
+记录 id=9 重启后:
+{"id": 9, "name": "课程设计验证 · 白萝卜", "status": "done", "salt_pct": 5, "reading_count": 1, "last_temp": 24.5, "last_ph": 4.6}
+
+统计接口:
+{"total":7,"fermenting":4,"done":2,"failed":1,"readings":10,"by_kind":[{"kind":"泡菜","n":3},{"kind":"味噌","n":1},{"kind":"康普茶","n":1},{"kind":"腌菜","n":1},{"kind":"酸面团","n":1}],"longest_running":{"name":"白味噌 · 春酿","kind":"味噌","day_no":30,"overdue_days":-150},"today":"2026-10-25"}
+2026-10-25T06:01:27.858Z 172.19.0.1 PATCH /api/batches/9 400 1ms
+2026-10-25T06:01:27.864Z 172.19.0.1 POST /api/batches/9/readings 400 4ms
+2026-10-25T06:01:27.866Z 172.19.0.1 POST /api/batches 400 1ms
+2026-10-25T06:01:27.874Z 172.19.0.1 GET /api/batches/999999 404 6ms
+2026-10-25T06:01:27.879Z 172.19.0.1 PUT /api/batches 405 1ms
+2026-10-25T06:01:43.575Z 172.19.0.1 GET /api/batches/9 200 11ms
+[salt-time] 收到 SIGTERM，收尾退出
+[salt-time] 已启动 http://0.0.0.0:3000  node v20.20.2
+[salt-time] 数据库连接正常
+2026-10-25T06:01:51.072Z 127.0.0.1 GET /healthz 200 34ms
+2026-10-25T06:01:52.705Z 172.19.0.1 GET /api/batches/9 200 62ms
+2026-10-25T06:01:52.787Z 172.19.0.1 GET /api/stats 200 52ms

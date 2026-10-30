@@ -1,0 +1,37 @@
+=========== 镜像版本与回退 ===========
+$ docker images salt-time-app
+salt-time-app:1.0.0  6637e28c5209  2 hours ago
+
+$ docker tag salt-time-app:1.0.0 salt-time-app:0.9.9      # 造一个旧版本标签
+salt-time-app:0.9.9  6637e28c5209
+salt-time-app:1.0.0  6637e28c5209
+
+回退：.env 中 APP_VERSION 改为 0.9.9
+APP_VERSION=0.9.9
+$ docker compose up -d --no-build --force-recreate
+ Container salt-time-db Recreated 
+ Container salt-time-app Recreated 
+ Container salt-time-db Started 
+ Container salt-time-app Started 
+
+回退后实际使用的镜像:
+salt-time-app:0.9.9  状态=running
+salt-time-app  salt-time-app:0.9.9  Up 10 seconds (healthy)
+salt-time-db  postgres:16-alpine  Up 16 seconds (healthy)
+回退后接口复测:
+{"ok":true,"db":"up","version":"1.0.0"}
+
+确认可用，恢复到 1.0.0
+APP_VERSION=1.0.0
+$ docker compose up -d --no-build --force-recreate
+ Container salt-time-db Recreated 
+ Container salt-time-app Recreated 
+ Container salt-time-db Started 
+ Container salt-time-app Started 
+salt-time-app  salt-time-app:1.0.0  Up 10 seconds (healthy)
+salt-time-db  postgres:16-alpine  Up 16 seconds (healthy)
+现在运行: salt-time-app:1.0.0
+已清理临时标签 salt-time-app:0.9.9
+
+最终确认:
+{"ok":true,"db":"up","version":"1.0.0"}

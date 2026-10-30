@@ -1,0 +1,4 @@
+新建临时记录 id=10  -> HTTP 201
+DELETE /api/batches/10  -> HTTP 200  {"ok":true,"deleted":10}
+再次查询该 id        -> HTTP 404  {"error":"没找到这一坛"}
+删除后统计 -> {"total":7,"fermenting":4,"done":2,"failed":1,"readings":10,"by_kind":[{"kind":"泡菜","n":3},{"kind":"味噌","n":1},{"kind":"康普茶","n":1},{"kind":"腌菜","n":1},{"kind":"酸面团","n":1}],"longest_running":{"name":"白味噌 · 春酿","kind":"味噌","day_no":30,"overdue_days":-150},"today":"2026-10-25"}

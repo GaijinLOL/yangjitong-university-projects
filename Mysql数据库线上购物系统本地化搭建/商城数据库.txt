@@ -1,0 +1,256 @@
+-- 创建数据库
+CREATE DATABASE IF NOT EXISTS OnlineShoppingSystem CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE OnlineShoppingSystem;
+
+-- 创建用户表
+CREATE TABLE IF NOT EXISTS Users (
+    userid INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    phone VARCHAR(20),
+    createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 创建商品表
+CREATE TABLE IF NOT EXISTS Products (
+    productid INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    category VARCHAR(50),
+    stock INT DEFAULT 0,
+    createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 创建订单表
+CREATE TABLE IF NOT EXISTS Orders (
+    orderid INT AUTO_INCREMENT PRIMARY KEY,
+    userid INT NOT NULL,
+    totalprice DECIMAL(10, 2) NOT NULL,
+    status VARCHAR(50) DEFAULT 'pending',
+    createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (userid) REFERENCES Users(userid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 创建商品-订单表（订单详情）
+CREATE TABLE IF NOT EXISTS OrderDetails (
+    orderdetailid INT AUTO_INCREMENT PRIMARY KEY,
+    orderid INT NOT NULL,
+    productid INT NOT NULL,
+    quantity INT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (orderid) REFERENCES Orders(orderid),
+    FOREIGN KEY (productid) REFERENCES Products(productid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 创建商家表（供应商）
+CREATE TABLE IF NOT EXISTS Sellers (
+    sellerid INT AUTO_INCREMENT PRIMARY KEY,
+    sellername VARCHAR(50) NOT NULL,
+    contactemail VARCHAR(100) NOT NULL,
+    contactphone VARCHAR(20),
+    createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 创建收货地址表
+CREATE TABLE IF NOT EXISTS ShippingAddresses (
+    addressid INT AUTO_INCREMENT PRIMARY KEY,
+    userid INT NOT NULL,
+    address VARCHAR(200) NOT NULL,
+    city VARCHAR(50) NOT NULL,
+    province VARCHAR(50) NOT NULL,
+    postalcode VARCHAR(10),
+    createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (userid) REFERENCES Users(userid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 创建商品-供应商关联表
+CREATE TABLE IF NOT EXISTS ProductSellers (
+    productsellerid INT AUTO_INCREMENT PRIMARY KEY,
+    productid INT NOT NULL,
+    sellerid INT NOT NULL,
+    createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (productid) REFERENCES Products(productid),
+    FOREIGN KEY (sellerid) REFERENCES Sellers(sellerid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 创建临时表存储中文姓氏
+DROP TEMPORARY TABLE IF EXISTS ChineseSurnames;
+CREATE TEMPORARY TABLE ChineseSurnames (
+    surname VARCHAR(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+);
+
+-- 插入常见中文姓氏
+INSERT INTO ChineseSurnames VALUES 
+('王'),('李'),('张'),('刘'),('陈'),('杨'),('赵'),('黄'),('周'),('吴'),
+('徐'),('孙'),('马'),('朱'),('胡'),('林'),('郭'),('何'),('高'),('罗'),
+('郑'),('梁'),('谢'),('宋'),('唐'),('许'),('韩'),('冯'),('邓'),('曹'),
+('彭'),('曾'),('肖'),('田'),('董'),('袁'),('潘'),('于'),('蒋'),('蔡'),
+('余'),('杜'),('叶'),('程'),('苏'),('魏'),('吕'),('丁'),('任'),('沈'),
+('姚'),('卢'),('姜'),('崔'),('钟'),('谭'),('陆'),('汪'),('范'),('金'),
+('石'),('廖'),('贾'),('夏'),('韦'),('付'),('方'),('白'),('邹'),('孟'),
+('熊'),('秦'),('邱'),('江'),('尹'),('薛'),('闫'),('段'),('雷'),('侯'),
+('龙'),('史'),('陶'),('黎'),('贺'),('顾'),('毛'),('郝'),('龚'),('邵'),
+('万'),('钱'),('严'),('覃'),('武'),('戴'),('莫'),('孔'),('向'),('汤');
+
+-- 插入随机用户
+DELIMITER $$
+CREATE PROCEDURE InsertRandomUsers(IN numusers INT)
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    DECLARE randomsurname VARCHAR(10);
+    DECLARE randomname VARCHAR(50);
+    DECLARE randomname1 VARCHAR(10);
+    DECLARE randomname2 VARCHAR(10);
+    
+    WHILE i < numusers DO
+        SET randomsurname = (SELECT surname FROM ChineseSurnames ORDER BY RAND() LIMIT 1);
+        SET randomname1 = (SELECT surname FROM ChineseSurnames ORDER BY RAND() LIMIT 1);
+        SET randomname2 = (SELECT surname FROM ChineseSurnames ORDER BY RAND() LIMIT 1);
+        SET randomname = CONCAT(randomsurname, randomname1);
+        IF RAND() < 0.5 THEN SET randomname = CONCAT(randomname, randomname2); END IF;
+        SET @randomemail = CONCAT(SUBSTRING(randomname, 1, 1), FLOOR(RAND() * 1000), '@example.com');
+        SET @randomphone = CONCAT('1', FLOOR(RAND() * 9 + 1), FLOOR(RAND() * 10000000 + 10000000));
+        INSERT INTO Users (username, password, email, phone)
+        VALUES (randomname, SHA2('password123', 256), @randomemail, @randomphone);
+        SET i = i + 1;
+    END WHILE;
+END $$
+DELIMITER ;
+
+-- 插入随机商品
+DELIMITER $$
+CREATE PROCEDURE InsertRandomProducts(IN numproducts INT)
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    WHILE i < numproducts DO
+        INSERT INTO Products (name, description, price, category, stock)
+        VALUES (
+            CONCAT('商品', FLOOR(RAND() * 1000)),
+            CONCAT('这是商品', FLOOR(RAND() * 1000), '的详细描述。'),
+            FLOOR(RAND() * 1000) + 10,
+            CASE FLOOR(RAND() * 4) WHEN 0 THEN '电子产品' WHEN 1 THEN '服装' WHEN 2 THEN '书籍' ELSE '杂货' END,
+            FLOOR(RAND() * 100)
+        );
+        SET i = i + 1;
+    END WHILE;
+END $$
+DELIMITER ;
+
+-- 插入随机订单
+DELIMITER $$
+CREATE PROCEDURE InsertRandomOrders(IN numorders INT)
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    WHILE i < numorders DO
+        INSERT INTO Orders (userid, totalprice, status)
+        VALUES (
+            FLOOR(RAND() * (SELECT COUNT(*) FROM Users)) + 1,
+            FLOOR(RAND() * 1000) + 10,
+            CASE FLOOR(RAND() * 3) WHEN 0 THEN 'pending' WHEN 1 THEN 'processing' ELSE 'completed' END
+        );
+        SET i = i + 1;
+    END WHILE;
+END $$
+DELIMITER ;
+
+-- 插入随机订单详情
+DELIMITER $$
+CREATE PROCEDURE InsertRandomOrderDetails(IN numdetails INT)
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    WHILE i < numdetails DO
+        SET @randomorderid = FLOOR(RAND() * (SELECT COUNT(*) FROM Orders)) + 1;
+        SET @randomproductid = FLOOR(RAND() * (SELECT COUNT(*) FROM Products)) + 1;
+        INSERT INTO OrderDetails (orderid, productid, quantity, price)
+        VALUES (@randomorderid, @randomproductid, FLOOR(RAND() * 5) + 1, 
+                (SELECT price FROM Products WHERE productid = @randomproductid));
+        SET i = i + 1;
+    END WHILE;
+END $$
+DELIMITER ;
+
+-- 插入随机商家
+DELIMITER $$
+CREATE PROCEDURE InsertRandomSellers(IN numsellers INT)
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    DECLARE randomsurname VARCHAR(10);
+    DECLARE randomsellername VARCHAR(50);
+    DECLARE randomname1 VARCHAR(10);
+    DECLARE randomname2 VARCHAR(10);
+    WHILE i < numsellers DO
+        SET randomsurname = (SELECT surname FROM ChineseSurnames ORDER BY RAND() LIMIT 1);
+        SET randomname1 = (SELECT surname FROM ChineseSurnames ORDER BY RAND() LIMIT 1);
+        SET randomname2 = (SELECT surname FROM ChineseSurnames ORDER BY RAND() LIMIT 1);
+        SET randomsellername = CONCAT(randomsurname, randomname1);
+        IF RAND() < 0.5 THEN SET randomsellername = CONCAT(randomsellername, randomname2); END IF;
+        INSERT INTO Sellers (sellername, contactemail, contactphone)
+        VALUES (
+            randomsellername,
+            CONCAT(SUBSTRING(randomsellername, 1, 1), FLOOR(RAND() * 1000), '@seller.com'),
+            CONCAT('1', FLOOR(RAND() * 9 + 1), FLOOR(RAND() * 10000000 + 10000000))
+        );
+        SET i = i + 1;
+    END WHILE;
+END $$
+DELIMITER ;
+
+-- 插入随机收货地址
+DELIMITER $$
+CREATE PROCEDURE InsertRandomShippingAddresses(IN numaddresses INT)
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    WHILE i < numaddresses DO
+        INSERT INTO ShippingAddresses (userid, address, city, province, postalcode)
+        VALUES (
+            FLOOR(RAND() * (SELECT COUNT(*) FROM Users)) + 1,
+            CONCAT('街道', FLOOR(RAND() * 1000), '号'),
+            '城市',
+            '省份',
+            CONCAT(FLOOR(RAND() * 10), FLOOR(RAND() * 10), FLOOR(RAND() * 10), 
+                   FLOOR(RAND() * 10), FLOOR(RAND() * 10), FLOOR(RAND() * 10))
+        );
+        SET i = i + 1;
+    END WHILE;
+END $$
+DELIMITER ;
+
+-- 插入随机商品-供应商关联（新增）
+DELIMITER $$
+CREATE PROCEDURE InsertRandomProductSellers(IN numrelations INT)
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    WHILE i < numrelations DO
+        SET @randomproductid = FLOOR(RAND() * (SELECT COUNT(*) FROM Products)) + 1;
+        SET @randomsellerid = FLOOR(RAND() * (SELECT COUNT(*) FROM Sellers)) + 1;
+        INSERT INTO ProductSellers (productid, sellerid)
+        SELECT @randomproductid, @randomsellerid
+        WHERE NOT EXISTS (
+            SELECT 1 FROM ProductSellers 
+            WHERE productid = @randomproductid AND sellerid = @randomsellerid
+        );
+        SET i = i + 1;
+    END WHILE;
+END $$
+DELIMITER ;
+
+-- 插入测试数据（新增商品-供应商关联）
+CALL InsertRandomUsers(1000);
+CALL InsertRandomProducts(500);
+CALL InsertRandomSellers(200); -- 先插入商家，再关联
+CALL InsertRandomProductSellers(1000); -- 假设每个商品关联2个供应商
+CALL InsertRandomOrders(500);
+CALL InsertRandomOrderDetails(2000);
+CALL InsertRandomShippingAddresses(500);
+
+-- 清理临时表和存储过程
+DROP TEMPORARY TABLE IF EXISTS ChineseSurnames;
+DROP PROCEDURE IF EXISTS InsertRandomUsers;
+DROP PROCEDURE IF EXISTS InsertRandomProducts;
+DROP PROCEDURE IF EXISTS InsertRandomOrders;
+DROP PROCEDURE IF EXISTS InsertRandomOrderDetails;
+DROP PROCEDURE IF EXISTS InsertRandomSellers;
+DROP PROCEDURE IF EXISTS InsertRandomShippingAddresses;
+DROP PROCEDURE IF EXISTS InsertRandomProductSellers; -- 新增清理

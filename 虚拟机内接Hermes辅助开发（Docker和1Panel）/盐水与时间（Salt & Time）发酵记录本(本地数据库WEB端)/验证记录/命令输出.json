@@ -1,0 +1,150 @@
+{
+ "env": [
+  {
+   "cmd": "uname -r && cat /etc/redhat-release",
+   "out": "5.14.0-617.el9.x86_64\nCentOS Stream release 9"
+  },
+  {
+   "cmd": "hostnamectl | grep -vE 'Machine ID|Boot ID|Chassis'",
+   "out": "   Static hostname: (unset)\nTransient hostname: localhost\n         Icon name: computer-vm\n    Virtualization: vmware\n  Operating System: CentOS Stream 9\n       CPE OS Name: cpe:/o:centos:centos:9\n            Kernel: Linux 5.14.0-617.el9.x86_64\n      Architecture: x86-64\n   Hardware Vendor: VMware, Inc.\n    Hardware Model: VMware Virtual Platform\n  Firmware Version: 6.00"
+  },
+  {
+   "cmd": "hostname -I",
+   "out": "192.168.119.128 172.17.0.1 172.18.0.1 172.19.0.1 240e:473:6230:3643:20c:29ff:fec7:599e "
+  },
+  {
+   "cmd": "ip -4 addr show ens160 | grep -E 'inet|link'",
+   "out": "    inet 192.168.119.128/24 brd 192.168.119.255 scope global dynamic noprefixroute ens160"
+  }
+ ],
+ "res": [
+  {
+   "cmd": "uptime",
+   "out": " 14:18:48 up  4:15,  3 users,  load average: 5.01, 4.60, 4.33"
+  },
+  {
+   "cmd": "free -h",
+   "out": "               total        used        free      shared  buff/cache   available\nMem:           3.5Gi       2.6Gi       210Mi        41Mi       1.0Gi       931Mi\nSwap:          3.9Gi       1.6Gi       2.3Gi"
+  },
+  {
+   "cmd": "df -hT | grep -vE 'tmpfs|devtmpfs|overlay|shm'",
+   "out": "文件系统            类型      容量  已用  可用 已用% 挂载点\n/dev/mapper/cs-root xfs        37G   12G   26G   32% /\n/dev/mapper/cs-home xfs        19G  545M   18G    3% /home\n/dev/nvme0n1p1      xfs       960M  377M  584M   40% /boot\n/dev/sr0            iso9660    13G   13G     0  100% /run/media/ace_c7/CentOS-Stream-9-BaseOS-x86_64"
+  },
+  {
+   "cmd": "nproc && lscpu | grep -E 'Model name|^CPU\\(s\\)'",
+   "out": "4\nBIOS Model name:                         Intel(R) Core(TM) i9-14900HX"
+  }
+ ],
+ "panel": [
+  {
+   "cmd": "1pctl version",
+   "out": "------------------------------------------------------------\n                       查看 1Panel 版本信息\n------------------------------------------------------------\n版本: v2.4.1\n模式: stable\n------------------------------------------------------------"
+  },
+  {
+   "cmd": "grep -E 'ORIGINAL_(PORT|VERSION|ENTRANCE)' /usr/local/bin/1pctl",
+   "out": "ORIGINAL_PORT=21168\nORIGINAL_VERSION=v2.4.1\nORIGINAL_ENTRANCE=3abc9edd18"
+  },
+  {
+   "cmd": "ss -lntp | grep -E ':21168|:18080' | awk '{print $1,$4,$6}'",
+   "out": "LISTEN 0.0.0.0:21168 users:((\"1panel-core\",pid=4169187,fd=22))\nLISTEN 0.0.0.0:18080 users:((\"docker-proxy\",pid=4073216,fd=8))\nLISTEN [::]:18080 users:((\"docker-proxy\",pid=4073229,fd=8))"
+  }
+ ],
+ "tool": [
+  {
+   "cmd": "docker --version && docker compose version | head -1",
+   "out": "Docker version 29.9.2, build a82e528\nDocker Compose version v5.6.1"
+  },
+  {
+   "cmd": "hermes --version | head -2",
+   "out": "Hermes Agent v0.22.3 (2026.9.24) · stable · local 5b147ab036d6\nInstall directory: /usr/local/lib/hermes-agent"
+  },
+  {
+   "cmd": "docker info --format '{{.Containers}} containers, {{.ContainersRunning}} running, {{.Images}} images'",
+   "out": "2 containers, 2 running, 4 images"
+  }
+ ],
+ "tree": [
+  {
+   "cmd": "cd /opt/1panel/docker/compose/salt-time && find . -maxdepth 2 -not -path './node_modules*' | sort | sed 's|^\\./||'",
+   "out": ".\ndb\ndb/init\ndocker-compose.yml\nDockerfile\n.dockerignore\ndocs\ndocs/1panel-部署教程.md\ndocs/运维手册.md\ndocs/images\n.env\n.env.example\n.gitignore\nLICENSE\npackage.json\npublic\npublic/app.js\npublic/index.html\npublic/styles.css\nREADME.md\nscripts\nscripts/backup.sh\nscripts/deploy.sh\nscripts/health.sh\nserver.js"
+  }
+ ],
+ "ps": [
+  {
+   "cmd": "docker compose ps --format '{{.Name}}   {{.Image}}   {{.Status}}'",
+   "out": "salt-time-app   salt-time-app:1.0.0   Up 10 minutes (healthy)\nsalt-time-db   postgres:16-alpine   Up 10 minutes (healthy)"
+  },
+  {
+   "cmd": "docker compose ps --format '{{.Name}}   {{.Ports}}'",
+   "out": "salt-time-app   0.0.0.0:18080->3000/tcp, [::]:18080->3000/tcp\nsalt-time-db   5432/tcp"
+  },
+  {
+   "cmd": "docker images --format '{{.Repository}}:{{.Tag}}   {{.Size}}' | grep -E 'salt-time|postgres'",
+   "out": "salt-time-app:1.0.0   193MB\npostgres:16-alpine   418MB"
+  }
+ ],
+ "net": [
+  {
+   "cmd": "docker network inspect salt-time-net -f '{{.Name}}  {{.Driver}}  {{range .IPAM.Config}}{{.Subnet}}{{end}}'",
+   "out": "salt-time-net  bridge  172.19.0.0/16"
+  },
+  {
+   "cmd": "docker ps --format '{{.Names}}  {{.Ports}}'",
+   "out": "salt-time-app  0.0.0.0:18080->3000/tcp, [::]:18080->3000/tcp\nsalt-time-db  5432/tcp"
+  },
+  {
+   "cmd": "docker inspect salt-time-app | grep -m1 '\"IPAddress\"'",
+   "out": "                    \"IPAddress\": \"172.19.0.3\","
+  },
+  {
+   "cmd": "docker volume ls | grep salt-time",
+   "out": "local     salt-time-db-data"
+  }
+ ],
+ "vol": [
+  {
+   "cmd": "docker volume inspect salt-time-db-data --format '{{.Name}} -> {{.Mountpoint}}'",
+   "out": "salt-time-db-data -> /var/lib/docker/volumes/salt-time-db-data/_data"
+  },
+  {
+   "cmd": "docker inspect salt-time-db --format '{{range .Mounts}}{{.Type}} {{.Name}} -> {{.Destination}}{{println}}{{end}}'",
+   "out": "bind  -> /docker-entrypoint-initdb.d\nvolume salt-time-db-data -> /var/lib/postgresql/data"
+  },
+  {
+   "cmd": "du -sh /var/lib/docker/volumes/salt-time-db-data/_data",
+   "out": "63M\t/var/lib/docker/volumes/salt-time-db-data/_data"
+  }
+ ],
+ "model": [
+  {
+   "cmd": "grep -nE '^  (provider|default|base_url):' /root/.hermes/config.yaml",
+   "out": "75:  default: \"deepseek-v4-flash\"\n108:  provider: \"deepseek\"\n112:  base_url: \"https://api.deepseek.com/anthropic\""
+  },
+  {
+   "cmd": "ls -l /root/.hermes/.env",
+   "out": "-rw-------. 1 root root 28428 10月 25 11:55 /root/.hermes/.env"
+  },
+  {
+   "cmd": "grep -E '^DEEPSEEK' /root/.hermes/.env | sed -E 's/=.*/=********************/'",
+   "out": "DEEPSEEK_API_KEY=********************\nDEEPSEEK_BASE_URL=********************"
+  },
+  {
+   "cmd": "hermes --version | head -1",
+   "out": "Hermes Agent v0.22.3 (2026.9.24) · stable · local 5b147ab036d6"
+  }
+ ],
+ "health": [
+  {
+   "cmd": "curl -s http://127.0.0.1:18080/healthz",
+   "out": "{\"ok\":true,\"db\":\"up\",\"version\":\"1.0.0\"}"
+  },
+  {
+   "cmd": "docker inspect -f '{{.Name}} {{.State.Health.Status}}' salt-time-app salt-time-db",
+   "out": "/salt-time-app healthy\n/salt-time-db healthy"
+  },
+  {
+   "cmd": "docker logs --tail 6 salt-time-app 2>&1",
+   "out": "2026-10-25T06:16:43.667Z 127.0.0.1 GET /healthz 200 26ms\n2026-10-25T06:17:14.243Z 127.0.0.1 GET /healthz 200 19ms\n2026-10-25T06:17:44.854Z 127.0.0.1 GET /healthz 200 22ms\n2026-10-25T06:18:15.403Z 127.0.0.1 GET /healthz 200 20ms\n2026-10-25T06:18:45.999Z 127.0.0.1 GET /healthz 200 21ms\n2026-10-25T06:18:54.722Z 172.19.0.1 GET /healthz 200 2ms"
+  }
+ ]
+}

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>工业视觉质检</title><link rel="stylesheet" href="./styles/app.css?v=20260923"><link rel="stylesheet" href="./styles/overrides.css?v=20260923"></head>
+<body>
+  <header><div><span class="eyebrow">VISION INSPECTION</span><h1>工业视觉质检平台</h1></div><div id="connection" class="connection">服务就绪</div></header>
+  <main>
+    <section class="toolbar">
+      <label class="button primary">上传图片<input id="file-input" type="file" accept=".jpg,.jpeg,.png,.bmp" multiple hidden></label>
+      <button id="detect-button" class="button" disabled>开始检测</button>
+      <button id="live-button" class="button">实时摄像头检测</button>
+      <button id="export-button" class="button" disabled>导出当前批次 CSV</button>
+      <label class="team-field">团队名称<input id="team-name" class="text-input" placeholder="团队昵称（导出文件名用）"></label>
+      <span id="progress-text" class="muted"></span>
+    </section>
+    <section id="drop-zone" class="drop-zone">拖拽图片到此处，或点击“上传图片”<small>支持 JPG / JPEG / PNG / BMP；可多选批量检测</small></section>
+    <section class="workspace">
+      <div class="viewer-card"><div class="viewer-head"><span class="section-kicker">ANNOTATED VIEW</span><span id="image-counter" class="image-counter"></span></div><div id="empty-state" class="empty-state">等待检测图像</div><div id="canvas-wrap" class="canvas-wrap hidden"><canvas id="image-canvas"></canvas></div><div id="image-meta" class="image-meta"></div><div class="viewer-actions"><button id="prev-image" class="button compact hidden" aria-label="上一张">← 上一张</button><button id="save-image" class="link-button hidden">保存标注图</button><button id="next-image" class="button compact hidden" aria-label="下一张">下一张 →</button></div></div>
+      <aside class="result-panel"><div id="verdict" class="verdict neutral">未检测</div><div class="metrics"><span>缺陷数 <b id="defect-count">-</b></span><span>耗时 <b id="infer-time">-</b></span></div><h2>检出目标</h2><div id="detection-list" class="detection-list"><p class="muted">完成检测后显示坐标与置信度</p></div></aside>
+    </section>
+    <section id="live-panel" class="live-panel hidden">
+      <div class="live-head">
+        <div><span class="section-kicker">LIVE CAMERA</span><h2>实时摄像头检测</h2></div>
+        <div class="live-actions">
+          <button id="live-start" class="button compact">开始检测</button>
+          <button id="live-stop" class="button compact" disabled>停止</button>
+          <button id="live-close" class="button compact">收起面板</button>
+        </div>
+      </div>
+      <div class="live-body">
+        <div class="live-canvas-wrap">
+          <video id="live-video" autoplay playsinline muted class="hidden"></video>
+          <canvas id="live-canvas"></canvas>
+          <div id="live-hint" class="live-hint">点击「开始检测」后将请求摄像头权限。页面运行在本机服务上，浏览器允许摄像头访问。</div>
+        </div>
+        <aside class="live-side">
+          <div id="live-verdict" class="verdict neutral">未运行</div>
+          <div class="metrics"><span>帧率 <b id="live-fps">-</b></span><span>推理耗时 <b id="live-ms">-</b></span></div>
+          <h2>实时统计</h2>
+          <div class="metrics"><span>当前缺陷 <b id="live-defects">-</b></span><span>累计检出 <b id="live-total">0</b></span></div>
+          <div id="live-counts" class="live-counts"><p class="muted">开始检测后显示各类缺陷累计数</p></div>
+        </aside>
+      </div>
+    </section>
+    <section class="batch">
+      <div class="batch-title compact-title"><div><span class="section-kicker">IMAGE LIST</span><h2>图片明细</h2></div><div class="batch-tools"><span class="muted">点击任意图片查看标注</span><progress id="progress" value="0" max="1"></progress></div></div>
+      <div id="batch-list" class="batch-list"><p class="muted">上传多张图片后，将逐张显示检测状态。</p></div>
+      <div class="batch-divider"></div>
+      <div class="batch-title"><div><span class="section-kicker">BATCH INSIGHTS</span><h2>批次结果分析</h2></div></div>
+      <div id="analytics" class="analytics empty-analytics"><span>完成一批检测后，这里会显示批次概览</span></div>
+    </section>
+  </main><script type="module" src="./src/main.js?v=20260923"></script>
+</body></html>

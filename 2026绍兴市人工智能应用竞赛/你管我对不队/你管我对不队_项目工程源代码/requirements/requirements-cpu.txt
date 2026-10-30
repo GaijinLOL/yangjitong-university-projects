@@ -1,0 +1,10 @@
+# Curtains3 缺陷检测 - CPU 版推理环境（无独立显卡的工业 Win10 设备）
+# 平台：Windows x64 / CPython 3.11
+# 安装顺序：先 requirements-common.txt，再本文件
+#
+# 安装源使用 PyTorch 官方 CPU 索引：
+#   pip install -r requirements-cpu.txt --index-url https://download.pytorch.org/whl/cpu
+
+-r requirements-common.txt
+torch==2.5.0+cpu
+torchvision==0.20.0+cpu

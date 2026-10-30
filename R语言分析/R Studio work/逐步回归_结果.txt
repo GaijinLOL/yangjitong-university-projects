@@ -1,0 +1,29 @@
+双向逐步回归结果\n数据文件： C:\Users\yangjitong\Desktop\R Studio work\逐步回归法作业_非年份数据加4.docx \n最终模型： CS ~ JZZ + NZ \n\n
+Call:
+lm(formula = CS ~ JZZ + NZ, data = dat)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-2186.7  -931.4  -410.1   706.7  2893.0 
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept) 3052.0535   563.7887   5.413 1.00e-05 ***
+JZZ            6.6621     0.3640  18.303  < 2e-16 ***
+NZ            -1.7086     0.1759  -9.716 2.62e-10 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 1398 on 27 degrees of freedom
+Multiple R-squared:  0.9885,	Adjusted R-squared:  0.9877 
+F-statistic:  1162 on 2 and 27 DF,  p-value: < 2.2e-16
+
+\n方差分析表：\nAnalysis of Variance Table
+
+Response: CS
+          Df     Sum Sq    Mean Sq  F value    Pr(>F)    
+JZZ        1 4356270071 4356270071 2229.732 < 2.2e-16 ***
+NZ         1  184435530  184435530   94.402 2.624e-10 ***
+Residuals 27   52750407    1953719                       
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1

@@ -1,0 +1,132 @@
+﻿{% extends "base.html" %}
+{% block title %}企业查询 - 企业经营分析与决策支持系统{% endblock %}
+
+{% block content %}
+  <section class="hero-card mb-4">
+    <div class="hero-content">
+      <div class="page-heading mb-3">
+        <div>
+          <span class="section-label">数据准备工作台</span>
+          <h1 class="h2">企业查询与数据同步</h1>
+          <div class="text-muted">这是整个系统的起点：先同步企业基础信息，再同步目标企业的行情和财务数据，之后进入可视化分析、智能问答和报告生成，形成完整的经营分析展示链路。</div>
+        </div>
+        <div class="action-cluster">
+          <button class="btn btn-primary" onclick="syncStockBasic()">同步企业基础信息</button>
+          <a class="btn btn-outline-primary" href="/qa">去智能问答</a>
+          <a class="btn btn-outline-dark" href="/report">去生成报告</a>
+        </div>
+      </div>
+      <div class="highlight-grid">
+        <div class="metric-card"><div class="metric-label">步骤 1</div><div class="metric-value">同步底表</div><div class="metric-hint">获取 stock_basic 企业清单</div></div>
+        <div class="metric-card"><div class="metric-label">步骤 2</div><div class="metric-value">搜索企业</div><div class="metric-hint">按 ts_code 或名称快速检索</div></div>
+        <div class="metric-card"><div class="metric-label">步骤 3</div><div class="metric-value">同步个股</div><div class="metric-hint">拉取价格、估值、财务数据</div></div>
+        <div class="metric-card"><div class="metric-label">步骤 4</div><div class="metric-value">进入分析</div><div class="metric-hint">看图、问答、报告一键串联</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card mb-4">
+    <div class="card-body">
+      <form class="row g-3 align-items-end" method="get" action="/company">
+        <div class="col-lg-8"><label class="form-label">企业代码或名称</label><input class="form-control" name="q" value="{{ q }}" placeholder="例如：000001.SZ / 平安银行 / 贵州茅台" /></div>
+        <div class="col-lg-4 d-grid"><button class="btn btn-primary" type="submit">搜索企业</button></div>
+      </form>
+    </div>
+  </section>
+
+  <section class="row g-3 mb-4">
+    <div class="col-lg-8">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div>{% if q %}<div class="fw-semibold">搜索结果</div><div class="small text-muted">关键词：{{ q }}，最多显示 50 条</div>{% else %}<div class="fw-semibold">搜索结果</div><div class="small text-muted">请输入企业代码或名称开始检索</div>{% endif %}</div>
+          <span class="badge-soft primary">同步后可进入经营分析流程</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0 align-middle">
+            <thead><tr><th>ts_code</th><th>名称</th><th>行业</th><th>地区</th><th>上市日期</th><th class="text-end">操作</th></tr></thead>
+            <tbody>
+              {% if q and companies|length > 0 %}
+                {% for c in companies %}
+                  <tr>
+                    <td><code>{{ c.ts_code }}</code></td>
+                    <td><div class="fw-semibold">{{ c.name }}</div><div class="small text-muted">{{ c.exchange or '-' }} / {{ c.market or '-' }}</div></td>
+                    <td>{{ c.industry or "-" }}</td>
+                    <td>{{ c.area or "-" }}</td>
+                    <td>{{ c.list_date or "-" }}</td>
+                    <td class="text-end"><div class="d-flex flex-wrap gap-2 justify-content-end"><button class="btn btn-sm btn-primary" onclick="syncCompany('{{ c.ts_code }}')">同步数据</button><a class="btn btn-sm btn-outline-secondary" href="/dashboard?ts_code={{ c.ts_code }}">看图</a><a class="btn btn-sm btn-outline-primary" href="/qa?ts_code={{ c.ts_code }}">问答</a><a class="btn btn-sm btn-outline-dark" href="/report?ts_code={{ c.ts_code }}">报告</a></div></td>
+                  </tr>
+                {% endfor %}
+              {% elif q %}
+                <tr><td colspan="6"><div class="empty-state">未找到结果。建议先同步企业基础信息后再搜索。</div></td></tr>
+              {% else %}
+                <tr><td colspan="6"><div class="empty-state"><div class="h5 mb-2">输入企业名称或代码开始检索</div><div>例如先搜索 <code>平安银行</code> 或 <code>000001.SZ</code>，再点击“同步数据”。</div></div></td></tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center"><div><div class="fw-semibold">同步日志</div><div class="small text-muted">便于展示接口调用结果与同步状态</div></div><span class="status-inline" id="syncStatus">等待操作</span></div>
+        <div class="card-body"><pre class="small" id="syncLog">等待操作...</pre></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="row g-3">
+    <div class="col-md-4"><div class="feature-card"><div class="badge-soft primary mb-3">同步建议</div><h3 class="h5">先同步企业基础信息</h3><p class="text-muted mb-0">首次使用建议先点击“同步企业基础信息”，建立可搜索的企业底表。</p></div></div>
+    <div class="col-md-4"><div class="feature-card"><div class="badge-soft success mb-3">演示建议</div><h3 class="h5">优先选择知名企业</h3><p class="text-muted mb-0">产品演示时建议选择平安银行、招商银行、贵州茅台等更易理解的企业案例，也便于补充投资者参考说明。</p></div></div>
+    <div class="col-md-4"><div class="feature-card"><div class="badge-soft warning mb-3">使用提醒</div><h3 class="h5">搜索不会写入数据库</h3><p class="text-muted mb-0">仅“同步企业基础信息”和“同步数据”会写入数据库，普通搜索只读取已有数据。</p></div></div>
+  </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function logSync(obj) {
+  const box = document.getElementById('syncLog');
+  box.textContent = JSON.stringify(obj, null, 2);
+}
+function setSyncStatus(text) {
+  const el = document.getElementById('syncStatus');
+  if (el) el.textContent = text;
+}
+async function syncStockBasic() {
+  const startedAt = Date.now();
+  setSyncStatus('同步中... (0s)');
+  logSync({status: 'syncing stock_basic...', started_at: new Date().toLocaleString()});
+  const timer = setInterval(() => { const elapsed = Math.round((Date.now() - startedAt) / 1000); setSyncStatus(`同步中... (${elapsed}s)`); }, 1000);
+  try {
+    const r = await fetch('/api/sync/stock_basic', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({list_status: 'L'}) });
+    const j = await r.json();
+    clearInterval(timer);
+    const elapsed = Math.round((Date.now() - startedAt) / 1000);
+    setSyncStatus(j.ok ? `完成 (${elapsed}s)` : '失败');
+    logSync(j);
+  } catch (e) {
+    clearInterval(timer);
+    setSyncStatus('');
+    logSync({ok: false, error: String(e)});
+  }
+}
+async function syncCompany(ts_code) {
+  const startedAt = Date.now();
+  setSyncStatus(`企业 ${ts_code} 同步中... (0s)`);
+  logSync({status: 'syncing company...', ts_code, started_at: new Date().toLocaleString()});
+  const timer = setInterval(() => { const elapsed = Math.round((Date.now() - startedAt) / 1000); setSyncStatus(`企业 ${ts_code} 同步中... (${elapsed}s)`); }, 1000);
+  try {
+    const r = await fetch('/api/sync/company', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ts_code}) });
+    const j = await r.json();
+    clearInterval(timer);
+    const elapsed = Math.round((Date.now() - startedAt) / 1000);
+    setSyncStatus(j.ok ? `完成 (${elapsed}s)` : '失败');
+    logSync(j);
+  } catch (e) {
+    clearInterval(timer);
+    setSyncStatus('');
+    logSync({ok: false, error: String(e), ts_code});
+  }
+}
+</script>
+{% endblock %}
+

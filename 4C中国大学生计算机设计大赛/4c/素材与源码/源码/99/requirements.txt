@@ -1,0 +1,8 @@
+Flask==3.0.3
+python-dotenv==1.0.1
+PyMySQL==1.1.1
+pandas==2.2.2
+numpy==2.0.1
+requests==2.32.3
+tushare==1.4.24
+dashscope==1.25.17

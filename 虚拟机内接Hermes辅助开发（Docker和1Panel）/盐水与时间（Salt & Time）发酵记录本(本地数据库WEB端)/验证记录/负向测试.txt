@@ -1,0 +1,7 @@
+空名字          POST   /api/batches                 -> HTTP 400  {"error":"名字 必填"}
+盐度 45        POST   /api/batches                 -> HTTP 400  {"error":"类型 必填"}
+非法状态         PATCH  /api/batches/9               -> HTTP 400  {"error":"状态只能是 fermenting / done / failed"}
+pH 15        POST   /api/batches/9/readings      -> HTTP 400  {"error":"pH 不能大于 14"}
+目标天数 0       POST   /api/batches                 -> HTTP 400  {"error":"类型 必填"}
+不存在的 ID      GET    /api/batches/999999          -> HTTP 404  {"error":"没找到这一坛"}
+不支持的方法       PUT    /api/batches                 -> HTTP 405  {"error":"不支持的方法"}

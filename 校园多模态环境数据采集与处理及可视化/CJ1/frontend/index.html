@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园天气+文本数据可视化平台</title>
+    <!-- 引入独立CSS样式 -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- 引入ECharts图表库 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部标题 -->
+        <header class="header">
+            <h1>科艺校园生态可视化平台</h1>
+            <p>实时天气监测 · 校园天气观测日志 · 数据趋势分析</p >
+        </header>
+
+        <!-- 实时天气统计 -->
+        <section class="stats">
+            <div class="stat-item">
+                <h3>当前温度</h3>
+                <div class="value" id="temp">-- ℃</div>
+            </div>
+            <div class="stat-item">
+                <h3>天气状况</h3>
+                <div class="value" id="weather">--</div>
+            </div>
+            <div class="stat-item">
+                <h3>实时湿度</h3>
+                <div class="value" id="humidity">-- %</div>
+            </div>
+            <div class="stat-item">
+                <h3>风向风力</h3>
+                <div class="value" id="wind">--</div>
+            </div>
+
+        </section>
+        <!-- 温度趋势图表 -->
+        <section class="chart-box">
+            <h2>校园温度24小时变化趋势</h2>
+            <div id="tempChart"></div>
+        </section>
+
+        <!-- 天气文本日志 -->
+        <section class="note-section">
+            <h2 style="margin-bottom: 20px; color: #2c3e50;">校园天气文本观测日志</h2>
+            <!-- 修改index.html的搜索框部分 -->
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="输入关键词搜索日志（如：上虞）" class="search-input">
+                <button onclick="searchNotes()" class="search-btn">搜索</button>
+            </div>
+            <div class="note-list" id="noteList">
+                <div class="loading">加载中...</div>
+            </div>
+        </section>
+
+    <!-- 其他模块：头部、实时天气、温度趋势图、日志模块 -->
+
+    <!-- 植物识别模块 移到页面底部 -->
+<!-- 植物识别模块 -->
+     <div class="plant-recognize-container">
+        <h2 class="plant-title">校园植物识别</h2>
+
+    <!-- 上传区域 -->
+        <div class="plant-upload-area">
+            <label for="plantImg" class="upload-label">
+                <div class="upload-icon">📷</div>
+                <p class="upload-text">点击或拖拽图片到此处上传</p>
+                <p class="upload-hint">支持 JPG、PNG 格式，文件不超过10MB</p>
+                <input type="file" id="plantImg" accept="image/jpg,image/jpeg,image/png" class="upload-input">
+            </label>
+        </div>
+
+    <!-- 图片预览区域 -->
+        <div class="plant-preview-container" id="previewContainer">
+            <div class="preview-placeholder">
+                <p>预览图将显示在这里</p>
+            </div>
+            <img id="previewImg" class="preview-image" src="" alt="植物预览图">
+        </div>
+
+    <!-- 操作与结果区域 -->
+        <div class="plant-actions">
+            <button onclick="uploadPlantImg()" class="recognize-btn">开始识别</button>
+            <button onclick="clearPreview()" class="reset-btn">清除图片</button>
+        </div>
+
+    <!-- 识别结果区域 -->
+        <div class="plant-result" id="plantResultContainer">
+            <div class="result-placeholder">识别结果将显示在这里</div>
+            <div id="plantResult" class="result-content"></div>
+        </div>
+          <div class="cultivation-suggestion">
+            <h3>栽培意见</h3>
+           <div id="cultivationContent" class="cultivation-content">
+      <!-- 栽培意见内容：默认提示文字，识别植物后可动态更新 -->
+      待植物识别完成后，将自动展示对应栽培建议
+           </div>
+          </div>
+     </div>
+    </div>
+    <!-- 引入独立JS逻辑 -->
+    <script src="js/api.js"></script>
+</body>
+</html>

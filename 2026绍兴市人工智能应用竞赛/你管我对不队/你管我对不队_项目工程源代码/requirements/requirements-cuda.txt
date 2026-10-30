@@ -1,0 +1,10 @@
+# Curtains3 缺陷检测 - CUDA 11.8 版推理环境（带 NVIDIA 独显的工业 Win10 设备）
+# 平台：Windows x64 / CPython 3.11
+# 与训练环境 anaconda envs/yolo 的 pytorch 2.5.0 + cuda11.8 + cudnn9 完全一致
+#
+# 安装源使用 PyTorch 官方 cu118 索引：
+#   pip install -r requirements-cuda.txt --index-url https://download.pytorch.org/whl/cu118
+
+-r requirements-common.txt
+torch==2.5.0+cu118
+torchvision==0.20.0+cu118

@@ -1,0 +1,66 @@
+# Python 缓存
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Python 虚拟环境
+.venv/
+**/.venv/
+venv/
+**/venv/
+env/
+**/env/
+
+# 已打包的 Python 运行环境
+runtime_cpu/
+**/runtime_cpu/
+
+# 编译和构建文件
+build/
+dist/
+*.dll
+*.exe
+
+# Node.js 依赖
+node_modules/
+
+# 编辑器和系统文件
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 本地配置和敏感文件
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# 临时文件
+*.log
+*.tmp
+*.temp
+
+# 大型交付文件
+*.mp4
+*.zip
+*.rar
+*.7z
+
+# 模型和训练产生的文件
+*.pt
+*.pth
+*.pkl
+*.npz
+# The featured model is small enough for normal Git hosting.
+!2026绍兴市人工智能应用竞赛/你管我对不队/你管我对不队_项目工程源代码/model/best.pt
+# Backup of nested repository history
+**/.git-backup/
+
+# Local secret backups
+**/.secrets.local.txt
